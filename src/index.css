@@ -15,6 +15,11 @@
   }
 }
 
+body {
+  padding-top: 80px; /* Ajuste para o tamanho do navbar (altura do h-20) */
+}
+
+
 /* Ajustes de navegação do Swiper */
 .swiper-button-next,
 .swiper-button-prev {
