@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Newspaper, FileText, LogOut } from "lucide-react";
+import { Newspaper, FileText, LogOut, Image } from "lucide-react";
 import PDFManager from "../components/PDFManager";
 import NewsManager from "../components/NewsManager";
+import AdsManager from "../components/AdsManager";
 import { generatePDFThumbnail } from "./utils/pdfToImage";
 
 interface PDFEdition {
@@ -15,7 +16,7 @@ interface PDFEdition {
 }
 
 const Admin = () => {
-  const [activeTab, setActiveTab] = useState<"news" | "editions">("editions");
+  const [activeTab, setActiveTab] = useState<"news" | "editions" | "ads">("editions");
   const [editions, setEditions] = useState<PDFEdition[]>([]);
   const navigate = useNavigate();
 
@@ -31,7 +32,6 @@ const Admin = () => {
           pdfUrl: "/pdfs/EDICAO482.pdf",
           cover: "",
         },
-        // Adicione mais edições mock conforme necessário
       ];
 
       // Gerar miniaturas para as edições
@@ -50,7 +50,7 @@ const Admin = () => {
 
   // Gerenciar upload de PDFs
   const handlePDFUpload = async (file: File, metadata: any) => {
-    const fileUrl = URL.createObjectURL(file); // Simula upload com URL local
+    const fileUrl = URL.createObjectURL(file);
     const newEdition: PDFEdition = {
       id: Date.now(),
       title: metadata.title,
@@ -79,15 +79,14 @@ const Admin = () => {
 
   // Função para logout
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated"); // Remove autenticação
-    navigate("/login"); // Redireciona para a tela de login
+    localStorage.removeItem("isAuthenticated");
+    navigate("/login");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Cabeçalho com tabs e botão de logout */}
           <div className="border-b border-gray-200 flex justify-between items-center">
             <nav className="flex -mb-px">
               <button
@@ -112,6 +111,17 @@ const Admin = () => {
                 <Newspaper className="w-5 h-5 inline-block mr-2" />
                 Gerenciar Notícias
               </button>
+              <button
+                onClick={() => setActiveTab("ads")}
+                className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                  activeTab === "ads"
+                    ? "border-red-600 text-red-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <Image className="w-5 h-5 inline-block mr-2" />
+                Gerenciar Anúncios
+              </button>
             </nav>
             <button
               onClick={handleLogout}
@@ -122,7 +132,6 @@ const Admin = () => {
             </button>
           </div>
 
-          {/* Conteúdo da aba ativa */}
           <div className="p-6">
             {activeTab === "editions" ? (
               <PDFManager
@@ -131,8 +140,10 @@ const Admin = () => {
                 onEdit={handlePDFEdit}
                 onUpload={handlePDFUpload}
               />
-            ) : (
+            ) : activeTab === "news" ? (
               <NewsManager />
+            ) : (
+              <AdsManager />
             )}
           </div>
         </div>

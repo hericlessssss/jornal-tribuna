@@ -1,26 +1,35 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
+// Configuração do worker para o PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-export async function generatePDFThumbnail(pdfUrl: string): Promise<string> {
-  try {
-    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-    const page = await pdf.getPage(1);
+/**
+ * Gera uma miniatura de um arquivo PDF.
+ * @param {string} pdfUrl - URL do arquivo PDF.
+ * @returns {Promise<string>} - Retorna uma URL da miniatura em base64.
+ */
+export const generatePDFThumbnail = async (pdfUrl: string): Promise<string> => {
+  const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+  const page = await pdf.getPage(1); // Obter a primeira página do PDF
+  
+  const viewport = page.getViewport({ scale: 1.5 }); // Aumenta o scale para mais detalhes
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
 
-    // Ajuste o scale para garantir a proporção vertical
-    const viewport = page.getViewport({ scale: 1.5 }); // Scale maior para detalhes mais nítidos
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d')!;
-
-    // Define o tamanho do canvas baseado na altura do viewport
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
-    await page.render({ canvasContext: context, viewport }).promise;
-
-    return canvas.toDataURL();
-  } catch (error) {
-    console.error('Erro ao gerar miniatura:', error);
-    return '';
+  if (!context) {
+    throw new Error('Não foi possível obter o contexto 2D do canvas');
   }
-}
+
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  const renderContext = {
+    canvasContext: context,
+    viewport: viewport,
+  };
+
+  await page.render(renderContext).promise;
+
+  // Retorna a imagem como uma URL base64
+  return canvas.toDataURL('image/png');
+};
