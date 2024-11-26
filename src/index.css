@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Open+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fontes globais */
+@layer base {
+  html {
+    font-family: 'Open Sans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Merriweather', serif;
+  }
+}
+
+/* Ajustes de navegação do Swiper */
+.swiper-button-next,
+.swiper-button-prev {
+  color: white !important;
+}
+
+.swiper-pagination-bullet {
+  background: white !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #dc2626 !important;
+}
+
+/* Customização do Radio Player */
+.radio-player .rhap_container {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.radio-player .rhap_main-controls-button {
+  color: #dc2626;
+}
+
+.radio-player .rhap_volume-button {
+  color: #374151;
+}
+
+.radio-player .rhap_volume-bar,
+.radio-player .rhap_volume-indicator {
+  background: #dc2626;
+}
+
+/* Ajustes para exibição de PDF */
+.pdf-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.pdf-item {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.pdf-item:hover {
+  transform: scale(1.02);
+}
+
+.pdf-item img {
+  width: 100%;
+  aspect-ratio: 8.5 / 11; /* Formato de página PDF */
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* Botão de Ver Mais */
+.btn-load-more {
+  display: block;
+  margin: 20px auto;
+  padding: 12px 24px;
+  font-size: 16px;
+  color: white;
+  background-color: #dc2626;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-load-more:hover {
+  background-color: #b91c1c;
+}
+
+/* Ajustes globais */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.5);
+}
+
+/* Responsividade */
+@media (min-width: 768px) {
+  .pdf-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .pdf-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
