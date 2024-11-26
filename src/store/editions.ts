@@ -16,6 +16,7 @@ interface EditionsState {
 export const useEditionsStore = create<EditionsState>((set, get) => ({
   editions: [],
   loading: false,
+
   fetchEditions: async () => {
     set({ loading: true });
     try {
@@ -32,6 +33,7 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
       set({ loading: false });
     }
   },
+
   addEdition: async (edition) => {
     try {
       const { data, error } = await supabase
@@ -46,6 +48,7 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
       console.error('Error adding edition:', error);
     }
   },
+
   deleteEdition: async (id) => {
     try {
       const { error } = await supabase
@@ -54,11 +57,12 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
         .eq('id', id);
 
       if (error) throw error;
-      set({ editions: get().editions.filter(edition => edition.id !== id) });
+      set({ editions: get().editions.filter((edition) => edition.id !== id) });
     } catch (error) {
       console.error('Error deleting edition:', error);
     }
   },
+
   updateEdition: async (id, updates) => {
     try {
       const { data, error } = await supabase
@@ -70,7 +74,7 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
 
       if (error) throw error;
       set({
-        editions: get().editions.map(edition =>
+        editions: get().editions.map((edition) =>
           edition.id === id ? { ...edition, ...data } : edition
         ),
       });

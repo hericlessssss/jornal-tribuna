@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth";
+import React, { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/auth';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading, checkAuth } = useAuthStore();

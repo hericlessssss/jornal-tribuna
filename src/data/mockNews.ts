@@ -1,4 +1,4 @@
-import { NewsItem, NewsCategory } from '../types/news';
+import { NewsItem, NewsCategory } from '../api/fetchNews';
 
 export const categories: NewsCategory[] = [
   { id: 1, name: 'Cidade', slug: 'cidade' },

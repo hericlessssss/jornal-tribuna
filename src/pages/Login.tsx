@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth";
-import toast from "react-hot-toast";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/auth';
+import toast from 'react-hot-toast';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { signIn } = useAuthStore();
 
@@ -14,9 +14,10 @@ const Login = () => {
 
     try {
       await signIn(email, password);
-      navigate("/admin");
+      navigate('/admin');
+      toast.success('Login realizado com sucesso!');
     } catch (error) {
-      // Error is already handled by the store
+      toast.error('Erro ao realizar login. Verifique suas credenciais.');
       console.error('Login error:', error);
     }
   };

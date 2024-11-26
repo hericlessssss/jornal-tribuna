@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X } from 'lucide-react';
-import { format } from 'date-fns';
 
 interface PDFUploaderProps {
   onUpload: (file: File, metadata: PDFMetadata) => Promise<void>;
@@ -18,7 +17,7 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [metadata, setMetadata] = useState<PDFMetadata>({
     title: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
+    date: new Date().toISOString().split('T')[0],
     description: '',
   });
   const [isUploading, setIsUploading] = useState(false);
@@ -27,7 +26,6 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
     const file = acceptedFiles[0];
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file);
-      // Auto-fill title from filename
       const title = file.name.replace('.pdf', '').replace(/_/g, ' ');
       setMetadata(prev => ({ ...prev, title }));
     }
@@ -35,10 +33,8 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'application/pdf': ['.pdf']
-    },
-    maxFiles: 1
+    accept: { 'application/pdf': ['.pdf'] },
+    maxFiles: 1,
   });
 
   const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -53,15 +49,14 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
     try {
       setIsUploading(true);
       await onUpload(selectedFile, metadata);
-      // Reset form
       setSelectedFile(null);
       setMetadata({
         title: '',
-        date: format(new Date(), 'yyyy-MM-dd'),
+        date: new Date().toISOString().split('T')[0],
         description: '',
       });
     } catch (error) {
-      console.error('Error uploading PDF:', error);
+      console.error('Erro ao fazer upload do PDF:', error);
     } finally {
       setIsUploading(false);
     }
@@ -104,7 +99,7 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
                   <p className="text-sm font-medium text-gray-900">
                     Arraste um arquivo PDF ou clique para selecionar
                   </p>
-                  <p className="text-sm text-gray-500">PDF até 10MB</p>
+                  <p className="text-sm text-gray-500">Tamanho máximo: 10 MB</p>
                 </div>
               )}
             </div>

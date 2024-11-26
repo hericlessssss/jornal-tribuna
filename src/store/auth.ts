@@ -13,6 +13,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: true,
+
   signIn: async (email, password) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       throw error;
     }
   },
+
   signOut: async () => {
     try {
       await supabase.auth.signOut();
@@ -37,6 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       toast.error(error.message || 'Erro ao fazer logout');
     }
   },
+
   checkAuth: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();

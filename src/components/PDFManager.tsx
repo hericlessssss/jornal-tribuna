@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import { Trash2, Edit, Eye, Download, Plus } from 'lucide-react';
 import PDFUploader from './PDFUploader';
 import PDFViewer from './PDFViewer';
-import { format } from 'date-fns';
 
 interface PDFEdition {
   id: number;
   title: string;
   date: string;
   description: string;
-  pdfUrl: string;
-  cover: string;
+  pdf_url: string;
+  cover_image_url: string;
 }
 
 interface PDFManagerProps {
@@ -37,13 +36,13 @@ const PDFManager: React.FC<PDFManagerProps> = ({
     }
   };
 
-  const handleEdit = async (id: number) => {
+  const handleEdit = (id: number) => {
     const edition = editions.find(e => e.id === id);
     if (edition) {
       setEditForm({
         title: edition.title,
-        date: format(new Date(edition.date), 'yyyy-MM-dd'),
-        description: edition.description
+        date: edition.date,
+        description: edition.description,
       });
       setEditingId(id);
     }
@@ -144,9 +143,9 @@ const PDFManager: React.FC<PDFManagerProps> = ({
               </form>
             ) : (
               <>
-                {edition.cover && (
+                {edition.cover_image_url && (
                   <img
-                    src={edition.cover}
+                    src={edition.cover_image_url}
                     alt={edition.title}
                     className="w-full h-48 object-cover"
                   />
@@ -159,14 +158,14 @@ const PDFManager: React.FC<PDFManagerProps> = ({
                   <div className="flex justify-between">
                     <div className="space-x-2">
                       <button
-                        onClick={() => setSelectedPDF(edition.pdfUrl)}
+                        onClick={() => setSelectedPDF(edition.pdf_url)}
                         className="text-blue-600 hover:text-blue-800"
                         title="Visualizar"
                       >
                         <Eye className="w-5 h-5" />
                       </button>
                       <a
-                        href={edition.pdfUrl}
+                        href={edition.pdf_url}
                         download
                         className="text-green-600 hover:text-green-800 inline-block"
                         title="Download"

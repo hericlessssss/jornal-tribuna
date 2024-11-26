@@ -16,6 +16,7 @@ interface AdsState {
 export const useAdsStore = create<AdsState>((set, get) => ({
   ads: [],
   loading: false,
+
   fetchAds: async () => {
     set({ loading: true });
     try {
@@ -32,6 +33,7 @@ export const useAdsStore = create<AdsState>((set, get) => ({
       set({ loading: false });
     }
   },
+
   addAd: async (ad) => {
     try {
       const { data, error } = await supabase
@@ -46,6 +48,7 @@ export const useAdsStore = create<AdsState>((set, get) => ({
       console.error('Error adding ad:', error);
     }
   },
+
   deleteAd: async (id) => {
     try {
       const { error } = await supabase
@@ -54,11 +57,12 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .eq('id', id);
 
       if (error) throw error;
-      set({ ads: get().ads.filter(ad => ad.id !== id) });
+      set({ ads: get().ads.filter((ad) => ad.id !== id) });
     } catch (error) {
       console.error('Error deleting ad:', error);
     }
   },
+
   updateAd: async (id, updates) => {
     try {
       const { data, error } = await supabase
@@ -70,9 +74,7 @@ export const useAdsStore = create<AdsState>((set, get) => ({
 
       if (error) throw error;
       set({
-        ads: get().ads.map(ad =>
-          ad.id === id ? { ...ad, ...data } : ad
-        ),
+        ads: get().ads.map((ad) => (ad.id === id ? { ...ad, ...data } : ad)),
       });
     } catch (error) {
       console.error('Error updating ad:', error);

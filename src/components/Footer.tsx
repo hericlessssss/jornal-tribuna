@@ -1,5 +1,5 @@
-import React from "react";
-import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import React from 'react';
+import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -54,7 +54,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Rodapé final */}
         <div className="mt-8 pt-8 border-t border-white text-center">
           <p className="text-white">
             © {new Date().getFullYear()} Jornal Tribuna. Todos os direitos reservados.

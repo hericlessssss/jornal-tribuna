@@ -1,13 +1,14 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { newsData } from '../data/mockNews';
+import { useNewsStore } from '../store/news';
 import { ArrowLeft } from 'lucide-react';
 
 const NewsDetail = () => {
-  const { id } = useParams();
-  const news = newsData.find(n => n.id === Number(id));
+  const { id } = useParams<{ id: string }>();
+  const { news } = useNewsStore();
+  const selectedNews = news.find((item) => item.id === id);
 
-  if (!news) {
+  if (!selectedNews) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -37,23 +38,21 @@ const NewsDetail = () => {
 
         <header className="mb-8">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-            <span className="text-red-600 font-semibold">{news.category}</span>
+            <span className="text-red-600 font-semibold">{selectedNews.category}</span>
             <span>•</span>
-            <time>{news.date}</time>
-            <span>•</span>
-            <span>Por {news.author}</span>
+            <time>{new Date(selectedNews.created_at).toLocaleDateString('pt-BR')}</time>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">{news.title}</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-6">{selectedNews.title}</h1>
         </header>
 
         <img
-          src={news.image}
-          alt={news.title}
+          src={selectedNews.cover_image_url}
+          alt={selectedNews.title}
           className="w-full h-[400px] object-cover rounded-lg mb-8"
         />
 
         <div className="prose prose-lg max-w-none">
-          {news.content.split('\n\n').map((paragraph, index) => (
+          {selectedNews.content.split('\n\n').map((paragraph, index) => (
             <p key={index} className="mb-4 text-gray-700 leading-relaxed">
               {paragraph.trim()}
             </p>
