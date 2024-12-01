@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useNewsStore } from '../store/news';
 import { ArrowLeft } from 'lucide-react';
 
 const NewsDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { news } = useNewsStore();
-  const selectedNews = news.find((item) => item.id === id);
+  const { news, fetchNews } = useNewsStore();
+
+  // Carregar as notícias se ainda não estiverem carregadas
+  useEffect(() => {
+    if (news.length === 0) {
+      fetchNews();
+    }
+  }, [news, fetchNews]);
+
+  // Garantir que o ID da notícia é comparado corretamente (convertendo ambos para string)
+  const selectedNews = news.find((item) => item.id.toString() === id);
 
   if (!selectedNews) {
     return (
@@ -46,7 +55,7 @@ const NewsDetail = () => {
         </header>
 
         <img
-          src={selectedNews.cover_image_url}
+          src={selectedNews.image_url || '/default-image.jpg'} // Fallback para uma imagem padrão
           alt={selectedNews.title}
           className="w-full h-[400px] object-cover rounded-lg mb-8"
         />

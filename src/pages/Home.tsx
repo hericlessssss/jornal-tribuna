@@ -44,7 +44,7 @@ const Home = () => {
               <SwiperSlide key={newsItem.id}>
                 <div className="relative h-full">
                   <img
-                    src={newsItem.cover_image_url}
+                    src={newsItem.image_url || '/default-image.jpg'} // Fallback para imagem padrão
                     alt={newsItem.title}
                     className="w-full h-full object-cover"
                   />
@@ -99,7 +99,7 @@ const Home = () => {
                 >
                   <div className="relative">
                     <img
-                      src={edition.cover_image_url}
+                      src={edition.cover_image_url || '/default-image.jpg'} // Fallback para imagem padrão
                       alt={edition.title}
                       className="w-full h-64 object-cover"
                     />
@@ -151,7 +151,7 @@ const Home = () => {
           ) : featuredNews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredNews.map((newsItem) => (
-                <NewsCard key={newsItem.id} {...newsItem} />
+                <NewsCard key={newsItem.id} news={newsItem} />
               ))}
             </div>
           ) : (

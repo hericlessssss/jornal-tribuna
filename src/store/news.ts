@@ -1,6 +1,16 @@
 import create from 'zustand';
 import { fetchNews, addNews, updateNews, deleteNews } from '../api/fetchNews';
 
+interface NewsItem {
+  id: number; // Usando number para o id
+  title: string;
+  content: string;
+  image_url?: string;
+  category: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const useNewsStore = create((set) => ({
   news: [] as NewsItem[],
   loading: false,

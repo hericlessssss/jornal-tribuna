@@ -4,7 +4,7 @@ export interface NewsItem {
   id: number;
   title: string;
   content: string;
-  cover_image_url: string;
+  image_url: string;
   highlighted: boolean;
   homepage_highlight: boolean;
   category: string;
@@ -19,7 +19,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
   const { data, error } = await supabase
     .from('news')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }); // Ordena por data, do mais recente ao mais antigo.
 
   if (error) {
     console.error('Erro ao buscar notícias:', error);
