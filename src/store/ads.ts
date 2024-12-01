@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';  // Verifique se o Supabase está configurado corretamente
 import type { Database } from '../types/database';
 
 type Ad = Database['public']['Tables']['ads']['Row'];
@@ -26,9 +26,10 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ ads: data });
+      set({ ads: data ?? [] }); // Adicionando fallback para evitar dados indefinidos
     } catch (error) {
       console.error('Error fetching ads:', error);
+      set({ ads: [] }); // Se ocorrer erro, esvaziar os anúncios
     } finally {
       set({ loading: false });
     }
@@ -41,11 +42,11 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .insert([ad])
         .select()
         .single();
-
+  
       if (error) throw error;
       set({ ads: [data, ...get().ads] });
     } catch (error) {
-      console.error('Error adding ad:', error);
+      console.error('Erro ao adicionar anúncio:', error);
     }
   },
 
@@ -57,7 +58,7 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .eq('id', id);
 
       if (error) throw error;
-      set({ ads: get().ads.filter((ad) => ad.id !== id) });
+      set({ ads: get().ads.filter((ad) => ad.id !== id) }); // Remover anúncio da lista após deletado
     } catch (error) {
       console.error('Error deleting ad:', error);
     }
@@ -73,11 +74,18 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .single();
 
       if (error) throw error;
-      set({
-        ads: get().ads.map((ad) => (ad.id === id ? { ...ad, ...data } : ad)),
-      });
+      if (data) {
+        set({
+          ads: get().ads.map((ad) =>
+            ad.id === id ? { ...ad, ...data } : ad
+          ),
+        }); // Atualizar o anúncio no estado
+      }
     } catch (error) {
       console.error('Error updating ad:', error);
     }
   },
 }));
+
+// Executando `fetchAds` sempre que o store for carregado
+useAdsStore.getState().fetchAds();

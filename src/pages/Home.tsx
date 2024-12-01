@@ -15,7 +15,7 @@ import 'swiper/css/pagination';
 const Home = () => {
   const { news, fetchNews, loading: newsLoading } = useNewsStore();
   const { editions, fetchEditions, loading: editionsLoading } = useEditionsStore();
-  const { fetchAds, loading: adsLoading } = useAdsStore();
+  const { fetchAds, ads, loading: adsLoading } = useAdsStore();
 
   useEffect(() => {
     fetchNews();
@@ -23,6 +23,7 @@ const Home = () => {
     fetchAds();
   }, [fetchNews, fetchEditions, fetchAds]);
 
+  // Filtrar dados de destaque e limitar as edições recentes
   const highlightedNews = news.filter((item) => item.highlighted);
   const featuredNews = news.filter((item) => item.homepage_highlight);
   const recentEditions = editions.slice(0, 6);
@@ -31,37 +32,43 @@ const Home = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Slider */}
       <section className="relative">
-        <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
-          navigation
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 5000 }}
-          className="h-[600px]"
-        >
-          {highlightedNews.map((newsItem) => (
-            <SwiperSlide key={newsItem.id}>
-              <div className="relative h-full">
-                <img
-                  src={newsItem.cover_image_url}
-                  alt={newsItem.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-end">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-white">
-                    <h2 className="text-4xl font-bold mb-4">{newsItem.title}</h2>
-                    <p className="text-xl mb-6">{newsItem.content.substring(0, 200)}...</p>
-                    <Link
-                      to={`/noticias/${newsItem.id}`}
-                      className="inline-block bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
-                    >
-                      Leia mais
-                    </Link>
+        {highlightedNews.length > 0 ? (
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            navigation
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 5000 }}
+            className="h-[600px]"
+          >
+            {highlightedNews.map((newsItem) => (
+              <SwiperSlide key={newsItem.id}>
+                <div className="relative h-full">
+                  <img
+                    src={newsItem.cover_image_url}
+                    alt={newsItem.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-end">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-white">
+                      <h2 className="text-4xl font-bold mb-4">{newsItem.title}</h2>
+                      <p className="text-xl mb-6">
+                        {newsItem.content.substring(0, 200)}...
+                      </p>
+                      <Link
+                        to={`/noticias/${newsItem.id}`}
+                        className="inline-block bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                      >
+                        Leia mais
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <p className="text-center text-gray-600 py-16">Nenhuma notícia destacada encontrada.</p>
+        )}
       </section>
 
       {/* Advertisement Section */}
@@ -69,8 +76,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {adsLoading ? (
             <p>Carregando anúncios...</p>
-          ) : (
+          ) : ads.length > 0 ? (
             <AdDisplay />
+          ) : (
+            <p className="text-center text-gray-600">Nenhum anúncio disponível.</p>
           )}
         </div>
       </section>
@@ -81,7 +90,7 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Últimas Edições</h2>
           {editionsLoading ? (
             <p>Carregando edições...</p>
-          ) : (
+          ) : recentEditions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {recentEditions.map((edition) => (
                 <div
@@ -127,6 +136,8 @@ const Home = () => {
                 </div>
               ))}
             </div>
+          ) : (
+            <p className="text-center text-gray-600">Nenhuma edição encontrada.</p>
           )}
         </div>
       </section>
@@ -137,12 +148,14 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Notícias em Destaque</h2>
           {newsLoading ? (
             <p>Carregando notícias...</p>
-          ) : (
+          ) : featuredNews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredNews.map((newsItem) => (
                 <NewsCard key={newsItem.id} {...newsItem} />
               ))}
             </div>
+          ) : (
+            <p className="text-center text-gray-600">Nenhuma notícia em destaque encontrada.</p>
           )}
         </div>
       </section>

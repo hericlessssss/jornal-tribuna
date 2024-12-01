@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Plus, Trash2, Edit, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, ExternalLink } from 'lucide-react';
 import { useAdsStore } from '../store/ads';
 import toast from 'react-hot-toast';
 
 interface AdFormData {
   title: string;
-  image: File | null;
+  image_url: string;  // Alterar para armazenar uma URL de imagem
   redirect_url: string;
 }
 
@@ -15,51 +14,28 @@ const AdsManager = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<AdFormData>({
     title: '',
-    image: null,
+    image_url: '', // Agora armazena o link direto da imagem
     redirect_url: '',
-  });
-
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
-    },
-    maxFiles: 1,
-    onDrop: (acceptedFiles) => {
-      setFormData((prev) => ({ ...prev, image: acceptedFiles[0] }));
-    },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.image) {
-      toast.error('Por favor, selecione uma imagem');
+    if (!formData.image_url) {
+      toast.error('Por favor, insira a URL da imagem');
       return;
     }
 
     try {
-      // Upload da imagem para o Supabase Storage
-      const fileExt = formData.image.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const { error: uploadError, data } = await supabase.storage
-        .from('ads')
-        .upload(fileName, formData.image);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('ads')
-        .getPublicUrl(fileName);
-
-      // Criar o anúncio no banco
+      // Criar o anúncio no banco de dados com a URL da imagem
       await addAd({
         title: formData.title,
-        image_url: publicUrl,
+        image_url: formData.image_url,  // Usar a URL fornecida
         redirect_url: formData.redirect_url,
       });
 
       toast.success('Anúncio adicionado com sucesso!');
       setIsAdding(false);
-      setFormData({ title: '', image: null, redirect_url: '' });
+      setFormData({ title: '', image_url: '', redirect_url: '' });
     } catch (error) {
       console.error('Erro ao adicionar anúncio:', error);
       toast.error('Erro ao adicionar anúncio');
@@ -109,23 +85,15 @@ const AdsManager = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Imagem do Anúncio
+                URL da Imagem
               </label>
-              <div
-                {...getRootProps()}
-                className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-red-500"
-              >
-                <input {...getInputProps()} />
-                <div className="text-center">
-                  {formData.image ? (
-                    <p className="text-sm text-gray-600">{formData.image.name}</p>
-                  ) : (
-                    <p className="text-sm text-gray-600">
-                      Arraste uma imagem ou clique para selecionar
-                    </p>
-                  )}
-                </div>
-              </div>
+              <input
+                type="url"
+                value={formData.image_url}
+                onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                required
+              />
             </div>
 
             <div>
@@ -164,7 +132,7 @@ const AdsManager = () => {
         {ads.map((ad) => (
           <div key={ad.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
             <img
-              src={ad.image_url}
+              src={ad.image_url}  // Agora exibe o link da imagem fornecida
               alt={ad.title}
               className="w-full h-48 object-cover"
             />

@@ -1,80 +1,51 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Newspaper, FileText, LogOut, Image } from "lucide-react";
 import PDFManager from "../components/PDFManager";
 import NewsManager from "../components/NewsManager";
 import AdsManager from "../components/AdsManager";
-import { generatePDFThumbnail } from "./utils/pdfToImage";
-
-interface PDFEdition {
-  id: number;
-  title: string;
-  date: string;
-  description: string;
-  pdfUrl: string;
-  cover: string;
-}
+import { useEditionsStore } from "../store/editions";
 
 const Admin = () => {
+  const { editions, fetchEditions, addEdition, updateEdition, deleteEdition } = useEditionsStore();
   const [activeTab, setActiveTab] = useState<"news" | "editions" | "ads">("editions");
-  const [editions, setEditions] = useState<PDFEdition[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Carregar edições mock para exibição inicial
-    const loadEditions = async () => {
-      const mockEditions = [
-        {
-          id: 1,
-          title: "Edição 482",
-          date: "2024-03-15",
-          description: "Edição de Março 2024",
-          pdfUrl: "/pdfs/EDICAO482.pdf",
-          cover: "",
-        },
-      ];
-
-      // Gerar miniaturas para as edições
-      const editionsWithCovers = await Promise.all(
-        mockEditions.map(async (edition) => ({
-          ...edition,
-          cover: await generatePDFThumbnail(edition.pdfUrl),
-        }))
-      );
-
-      setEditions(editionsWithCovers);
-    };
-
-    loadEditions();
-  }, []);
+    fetchEditions(); // Carregar edições do Supabase ao montar o componente
+  }, [fetchEditions]);
 
   // Gerenciar upload de PDFs
   const handlePDFUpload = async (file: File, metadata: any) => {
-    const fileUrl = URL.createObjectURL(file);
-    const newEdition: PDFEdition = {
-      id: Date.now(),
-      title: metadata.title,
-      date: metadata.date,
-      description: metadata.description,
-      pdfUrl: fileUrl,
-      cover: await generatePDFThumbnail(fileUrl),
-    };
+    try {
+      const newEdition = {
+        title: metadata.title,
+        date: metadata.date,
+        description: metadata.description,
+      };
 
-    setEditions((prev) => [newEdition, ...prev]);
+      await addEdition(newEdition, file); // Adicionar nova edição ao Supabase
+    } catch (error) {
+      console.error("Erro ao fazer upload do PDF:", error);
+    }
   };
 
   // Excluir uma edição
-  const handlePDFDelete = (id: number) => {
-    setEditions((prev) => prev.filter((edition) => edition.id !== id));
+  const handlePDFDelete = async (id: number) => {
+    try {
+      await deleteEdition(id); // Deletar edição do banco de dados e storage
+    } catch (error) {
+      console.error("Erro ao deletar a edição:", error);
+    }
   };
 
   // Editar uma edição
-  const handlePDFEdit = (id: number, data: Partial<PDFEdition>) => {
-    setEditions((prev) =>
-      prev.map((edition) =>
-        edition.id === id ? { ...edition, ...data } : edition
-      )
-    );
+  const handlePDFEdit = async (id: number, data: Partial<PDFEdition>) => {
+    try {
+      await updateEdition(id, data); // Atualizar dados da edição no Supabase
+    } catch (error) {
+      console.error("Erro ao editar a edição:", error);
+    }
   };
 
   // Função para logout
