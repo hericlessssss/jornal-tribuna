@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNewsStore } from '../../store/news';
-import NewsForm from './NewsForm';
-import NewsList from './NewsList';
+import { useNewsStore } from '../store/news';
+import NewsForm from './news/NewsForm';
+import NewsList from './news/NewsList';
 import toast from 'react-hot-toast';
 import type { ImageItem } from './NewsEditor';
-import { createNews, updateNews, deleteNews } from '../../services/newsService';
+import { createNews, updateNews, deleteNews } from '../services/newsService';
 
 interface NewsFormData {
   id?: string;
