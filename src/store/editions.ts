@@ -25,7 +25,7 @@ const uploadPDF = async (file: File) => {
     .from('pdf-editions')
     .getPublicUrl(fileName);
 
-  return publicUrlData.publicUrl; // Retorna a URL pública
+  return publicUrlData.publicUrl;
 };
 
 export const useEditionsStore = create<EditionsState>((set, get) => ({
@@ -38,12 +38,13 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
       const { data, error } = await supabase
         .from('pdf_editions')
         .select('*')
-        .order('date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ editions: data });
+      set({ editions: data ?? [] });
     } catch (error) {
       console.error('Error fetching editions:', error);
+      set({ editions: [] });
     } finally {
       set({ loading: false });
     }
@@ -52,13 +53,15 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
   addEdition: async (edition, file) => {
     set({ loading: true });
     try {
-      const pdfPath = await uploadPDF(file);
-
-      const newEdition = { ...edition, pdf_url: pdfPath };
+      const pdfUrl = await uploadPDF(file);
 
       const { data, error } = await supabase
         .from('pdf_editions')
-        .insert([newEdition])
+        .insert([{
+          ...edition,
+          pdf_url: pdfUrl,
+          created_at: new Date().toISOString()
+        }])
         .select()
         .single();
 
@@ -75,10 +78,12 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
   deleteEdition: async (id) => {
     set({ loading: true });
     try {
-      const edition = get().editions.find((edition) => edition.id === id);
+      const edition = get().editions.find(e => e.id === id);
       if (edition?.pdf_url) {
         const fileName = edition.pdf_url.split('/').pop();
-        await supabase.storage.from('pdf-editions').remove([fileName]);
+        if (fileName) {
+          await supabase.storage.from('pdf-editions').remove([fileName]);
+        }
       }
 
       const { error } = await supabase
@@ -88,7 +93,7 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
 
       if (error) throw error;
 
-      set({ editions: get().editions.filter((edition) => edition.id !== id) });
+      set({ editions: get().editions.filter(e => e.id !== id) });
     } catch (error) {
       console.error('Error deleting edition:', error);
     } finally {
@@ -109,7 +114,7 @@ export const useEditionsStore = create<EditionsState>((set, get) => ({
       if (error) throw error;
 
       set({
-        editions: get().editions.map((edition) =>
+        editions: get().editions.map(edition =>
           edition.id === id ? { ...edition, ...data } : edition
         ),
       });

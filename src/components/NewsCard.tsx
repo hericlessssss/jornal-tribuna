@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { formatDate } from '../utils/dateFormatter';
 
 interface NewsCardProps {
   news: {
@@ -7,37 +8,29 @@ interface NewsCardProps {
     title: string;
     excerpt: string;
     image_url: string;
-    date: string;
+    created_at: string;
     category: string;
   };
 }
 
 export default function NewsCard({ news }: NewsCardProps) {
-  const { id, title, excerpt, image_url, date, category } = news;
-
-  // Função para formatar a data
-  const formattedDate = new Date(date).toLocaleDateString('pt-BR', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const { id, title, excerpt, image_url, created_at, category } = news;
 
   return (
     <article className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]">
       <Link to={`/noticias/${id}`}>
         <img
-          src={image_url || '/default-image.jpg'} // Fallback para uma imagem padrão
+          src={image_url || '/default-image.jpg'}
           alt={title}
           className="w-full h-48 object-cover"
-          loading="lazy" // Carregamento preguiçoso para otimizar o desempenho
+          loading="lazy"
         />
         <div className="p-4">
           <div className="flex items-center space-x-2 mb-2">
             <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded">
               {category}
             </span>
-            <span className="text-xs text-gray-500">{formattedDate}</span>
+            <span className="text-xs text-gray-500">{formatDate(created_at)}</span>
           </div>
           <h3 className="text-xl font-bold mb-2 text-gray-900 line-clamp-2">
             {title}

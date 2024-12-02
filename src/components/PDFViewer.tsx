@@ -16,9 +16,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, onClose }) => {
         >
           <X className="w-6 h-6" />
         </button>
-        {/* Atualize aqui o iframe para usar diretamente o `pdfUrl` */}
         <iframe
-          src={pdfUrl}
+          src={`${pdfUrl}#toolbar=0&navpanes=0`}
           className="w-full h-full border-0"
           title="PDF Viewer"
         />

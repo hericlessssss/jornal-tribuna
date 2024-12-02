@@ -25,29 +25,26 @@ export interface Database {
         Row: {
           id: string;
           title: string;
-          date: string;
+          created_at: string;
           description: string;
           pdf_url: string;
           cover_image_url: string;
-          created_at: string;
         };
         Insert: {
           id?: string;
           title: string;
-          date: string;
+          created_at?: string;
           description: string;
           pdf_url: string;
-          cover_image_url: string;
-          created_at?: string;
+          cover_image_url?: string;
         };
         Update: {
           id?: string;
           title?: string;
-          date?: string;
+          created_at?: string;
           description?: string;
           pdf_url?: string;
           cover_image_url?: string;
-          created_at?: string;
         };
       };
       news: {

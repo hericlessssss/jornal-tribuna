@@ -5,7 +5,6 @@ import { Radio, X } from 'lucide-react';
 
 const RadioPlayer: React.FC = () => {
   const [isMinimized, setIsMinimized] = useState(true);
-  // Novo URL da estação de rádio
   const radioUrl = 'https://8903.brasilstream.com.br/stream';
 
   return (
@@ -36,7 +35,7 @@ const RadioPlayer: React.FC = () => {
           </div>
           <AudioPlayer
             src={radioUrl}
-            autoPlay={true} // Configurado para tocar automaticamente
+            autoPlay={true}
             showJumpControls={false}
             layout="stacked"
             customProgressBarSection={[]}
