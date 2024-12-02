@@ -1,20 +1,18 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useNewsStore } from '../store/news';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User } from 'lucide-react';
 
 const NewsDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { news, fetchNews } = useNewsStore();
 
-  // Carregar as notícias se ainda não estiverem carregadas
   useEffect(() => {
     if (news.length === 0) {
       fetchNews();
     }
   }, [news, fetchNews]);
 
-  // Garantir que o ID da notícia é comparado corretamente (convertendo ambos para string)
   const selectedNews = news.find((item) => item.id.toString() === id);
 
   if (!selectedNews) {
@@ -55,7 +53,7 @@ const NewsDetail = () => {
         </header>
 
         <img
-          src={selectedNews.image_url || '/default-image.jpg'} // Fallback para uma imagem padrão
+          src={selectedNews.image_url || '/default-image.jpg'}
           alt={selectedNews.title}
           className="w-full h-[400px] object-cover rounded-lg mb-8"
         />
@@ -67,6 +65,15 @@ const NewsDetail = () => {
             </p>
           ))}
         </div>
+
+        {selectedNews.author && (
+          <footer className="mt-8 pt-8 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-gray-600">
+              <User className="w-5 h-5" />
+              <span className="font-medium">Por {selectedNews.author}</span>
+            </div>
+          </footer>
+        )}
       </div>
     </article>
   );

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import WeatherWidget from './WeatherWidget';
+import RadioPlayer from './RadioPlayer';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,6 +59,10 @@ const Navbar = () => {
             >
               Contato
             </Link>
+            <div className="flex items-center space-x-4">
+              <WeatherWidget />
+              <RadioPlayer />
+            </div>
           </div>
         </div>
       </div>
@@ -93,6 +99,10 @@ const Navbar = () => {
             >
               Contato
             </Link>
+            <div className="flex items-center space-x-4">
+              <WeatherWidget />
+              <RadioPlayer />
+            </div>
           </div>
         </div>
       )}

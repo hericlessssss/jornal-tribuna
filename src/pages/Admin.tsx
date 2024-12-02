@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Newspaper, FileText, LogOut, Image } from "lucide-react";
+import { Newspaper, FileText, LogOut, Image, Users } from "lucide-react";
 import PDFManager from "../components/PDFManager";
 import NewsManager from "../components/NewsManager";
 import AdsManager from "../components/AdsManager";
+import UserManager from "../components/UserManager";
 import { useEditionsStore } from "../store/editions";
 
 const Admin = () => {
   const { editions, fetchEditions, addEdition, updateEdition, deleteEdition } = useEditionsStore();
-  const [activeTab, setActiveTab] = useState<"news" | "editions" | "ads">("editions");
+  const [activeTab, setActiveTab] = useState<"news" | "editions" | "ads" | "users">("editions");
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchEditions(); // Carregar edições do Supabase ao montar o componente
+    fetchEditions();
   }, [fetchEditions]);
 
-  // Gerenciar upload de PDFs
   const handlePDFUpload = async (file: File, metadata: any) => {
     try {
       const newEdition = {
@@ -24,31 +24,28 @@ const Admin = () => {
         description: metadata.description,
       };
 
-      await addEdition(newEdition, file); // Adicionar nova edição ao Supabase
+      await addEdition(newEdition, file);
     } catch (error) {
       console.error("Erro ao fazer upload do PDF:", error);
     }
   };
 
-  // Excluir uma edição
   const handlePDFDelete = async (id: number) => {
     try {
-      await deleteEdition(id); // Deletar edição do banco de dados e storage
+      await deleteEdition(id);
     } catch (error) {
       console.error("Erro ao deletar a edição:", error);
     }
   };
 
-  // Editar uma edição
   const handlePDFEdit = async (id: number, data: Partial<PDFEdition>) => {
     try {
-      await updateEdition(id, data); // Atualizar dados da edição no Supabase
+      await updateEdition(id, data);
     } catch (error) {
       console.error("Erro ao editar a edição:", error);
     }
   };
 
-  // Função para logout
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
     navigate("/login");
@@ -93,6 +90,17 @@ const Admin = () => {
                 <Image className="w-5 h-5 inline-block mr-2" />
                 Gerenciar Anúncios
               </button>
+              <button
+                onClick={() => setActiveTab("users")}
+                className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                  activeTab === "users"
+                    ? "border-red-600 text-red-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <Users className="w-5 h-5 inline-block mr-2" />
+                Gerenciar Usuários
+              </button>
             </nav>
             <button
               onClick={handleLogout}
@@ -113,8 +121,10 @@ const Admin = () => {
               />
             ) : activeTab === "news" ? (
               <NewsManager />
-            ) : (
+            ) : activeTab === "ads" ? (
               <AdsManager />
+            ) : (
+              <UserManager />
             )}
           </div>
         </div>

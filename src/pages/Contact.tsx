@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin } from 'lucide-react';
+import emailjs from '@emailjs/browser';
+import toast from 'react-hot-toast';
 
 interface FormData {
   name: string;
@@ -9,6 +11,14 @@ interface FormData {
   message: string;
 }
 
+const REASON_OPTIONS = {
+  duvidas: 'Dúvidas',
+  anuncio: 'Anunciar um negócio/serviço',
+  sugestao: 'Sugestão',
+  edicoes_anteriores: 'Solicitar edições anteriores',
+  outro: 'Outro',
+};
+
 const Contact = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -17,21 +27,69 @@ const Contact = () => {
     reason: 'duvidas',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    emailjs.init('aZTMP8lzShFLi68n7');
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically handle the form submission
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
+
+    const loadingToastId = toast.loading('Enviando mensagem...');
+
+    try {
+      const templateParams = {
+        to_email: 'tribunaunai@gmail.com',
+        from_name: formData.name,
+        from_email: formData.email,
+        phone: formData.phone,
+        subject: `[${REASON_OPTIONS[formData.reason as keyof typeof REASON_OPTIONS]}] Nova mensagem do site`,
+        message: formData.message,
+      };
+
+      await emailjs.send(
+        'service_j5nskn9',
+        'template_0pyrpkn',
+        templateParams
+      );
+
+      toast.success('Mensagem enviada com sucesso!', {
+        id: loadingToastId,
+        duration: 5000,
+      });
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        reason: 'duvidas',
+        message: '',
+      });
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      toast.error('Erro ao enviar mensagem. Por favor, tente novamente.', {
+        id: loadingToastId,
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleWhatsAppClick = () => {
     const whatsappNumber = '5538999664570';
-    const message = encodeURIComponent('Olá! Gostaria de mais informações sobre o Jornal Tribuna.');
+    const message = encodeURIComponent(
+      'Olá! Gostaria de mais informações sobre o Jornal Tribuna.'
+    );
     window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
   };
 
@@ -51,12 +109,14 @@ const Contact = () => {
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
               <Mail className="w-8 h-8 text-red-600 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">E-mail</h3>
-              <p className="text-gray-600">tribuna.unai@gmail.com</p>
+              <p className="text-gray-600">tribunaunai@gmail.com</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
               <MapPin className="w-8 h-8 text-red-600 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Endereço</h3>
-              <p className="text-gray-600">Rua Frei Supriano, nº 214, Bairro Canabrava, Unaí - MG</p>
+              <p className="text-gray-600">
+                Rua Frei Supriano, nº 214, Bairro Canabrava, Unaí - MG
+              </p>
             </div>
           </div>
 
@@ -131,10 +191,11 @@ const Contact = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
-                  <option value="duvidas">Dúvidas</option>
-                  <option value="anuncio">Anunciar um negócio/serviço</option>
-                  <option value="sugestao">Sugestão</option>
-                  <option value="outro">Outro</option>
+                  {Object.entries(REASON_OPTIONS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -155,9 +216,12 @@ const Contact = () => {
 
               <button
                 type="submit"
-                className="w-full bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                disabled={isSubmitting}
+                className={`w-full bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors ${
+                  isSubmitting ? 'bg-red-400 cursor-not-allowed' : 'hover:bg-red-700'
+                }`}
               >
-                Enviar mensagem
+                {isSubmitting ? 'Enviando...' : 'Enviar mensagem'}
               </button>
             </form>
           </div>
