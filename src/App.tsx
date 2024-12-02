@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
@@ -13,14 +13,32 @@ import RadioPlayer from "./components/RadioPlayer";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
-import WeatherWidget from "./components/WeatherWidget"; // Importe o widget
+import WeatherWidget from "./components/WeatherWidget";
+import { useVisitorStore } from "./store/visitors";
 
 function App() {
+  const { fetchCount, increment } = useVisitorStore();
+
+  useEffect(() => {
+    // Initialize visitor counter
+    const initializeVisitorCounter = async () => {
+      await fetchCount();
+      
+      // Check if this is a new session
+      const hasVisited = sessionStorage.getItem('hasVisited');
+      if (!hasVisited) {
+        await increment();
+        sessionStorage.setItem('hasVisited', 'true');
+      }
+    };
+
+    initializeVisitorCounter();
+  }, [fetchCount, increment]);
+
   return (
     <Router>
       <ScrollToTop />
       <div className="min-h-screen flex flex-col">
-        {/* Toast Container */}
         <Toaster
           position="top-right"
           toastOptions={{
@@ -65,7 +83,6 @@ function App() {
         </main>
         <Footer />
         <RadioPlayer />
-        <WeatherWidget /> {/* Adicionando o widget à página, geralmente pode ser dentro da Navbar */}
       </div>
     </Router>
   );

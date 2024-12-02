@@ -1,21 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Facebook, Instagram, Mail, Phone, MapPin, Users } from 'lucide-react';
 import { useVisitorStore } from '../store/visitors';
 
 const Footer = () => {
-  const { count, fetchCount, increment } = useVisitorStore();
-
-  useEffect(() => {
-    // Fetch initial count
-    fetchCount();
-
-    // Increment count only once per session
-    const hasIncremented = sessionStorage.getItem('visitorIncremented');
-    if (!hasIncremented) {
-      increment();
-      sessionStorage.setItem('visitorIncremented', 'true');
-    }
-  }, [fetchCount, increment]);
+  const { count } = useVisitorStore();
 
   return (
     <footer className="bg-red-600 text-white">
