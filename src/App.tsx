@@ -13,6 +13,7 @@ import RadioPlayer from "./components/RadioPlayer";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
+import WeatherWidget from "./components/WeatherWidget"; // Importe o widget
 
 function App() {
   return (
@@ -64,6 +65,7 @@ function App() {
         </main>
         <Footer />
         <RadioPlayer />
+        <WeatherWidget /> {/* Adicionando o widget à página, geralmente pode ser dentro da Navbar */}
       </div>
     </Router>
   );
