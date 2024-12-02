@@ -1,33 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import NewsCard from '../components/NewsCard';
-import { supabase } from '../lib/supabase'; // Certifique-se de configurar o Supabase corretamente
+import { supabase } from '../lib/supabase';
+import { formatDate } from '../utils/dateFormatter';
 
-// Defina uma interface para as notícias
 interface NewsItem {
   id: number;
   title: string;
   excerpt: string;
   image_url: string;
-  date: string;
+  created_at: string;
   category: string;
 }
 
 const News = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [newsData, setNewsData] = useState<NewsItem[]>([]); // Armazenar notícias do banco de dados
+  const [newsData, setNewsData] = useState<NewsItem[]>([]);
 
-  // Função para buscar notícias do banco de dados
   const fetchNews = async () => {
-    const { data, error } = await supabase.from('news').select('*');
+    const { data, error } = await supabase
+      .from('news')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
     if (error) {
       console.error('Erro ao buscar notícias:', error);
     } else {
-      console.log(data); // Verifique os dados no console
       setNewsData(data ?? []);
     }
   };
 
-  // Efeito para carregar as notícias ao montar o componente
   useEffect(() => {
     fetchNews();
   }, []);
@@ -40,29 +41,15 @@ const News = () => {
     { id: 5, name: 'Política', slug: 'politica' },
   ];
 
-  // Filtra as notícias com base na categoria selecionada
   const filteredNews = selectedCategory
     ? newsData.filter((news) => news.category.toLowerCase() === selectedCategory.toLowerCase())
     : newsData;
-
-  // Formatar a data (caso queira exibir a data de forma mais amigável)
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  console.log('Categoria selecionada:', selectedCategory); // Verifique a categoria selecionada
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">Últimas Notícias</h1>
 
-        {/* Filtro de Categorias */}
         <div className="mb-8 flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategory('')}
@@ -87,18 +74,17 @@ const News = () => {
           ))}
         </div>
 
-        {/* Grid de Notícias */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredNews.length > 0 ? (
             filteredNews.map((news) => (
               <NewsCard
                 key={news.id}
                 news={{
-                  id: news.id.toString(), // Garantir que id seja string para compatibilidade com a URL
+                  id: news.id.toString(),
                   title: news.title,
-                  excerpt: news.excerpt, // Certifique-se de que a notícia tenha um resumo (excerpt)
-                  image_url: news.image_url || '/default-image.jpg', // Usar imagem padrão caso não tenha
-                  date: formatDate(news.date), // Exibir a data formatada
+                  excerpt: news.excerpt,
+                  image_url: news.image_url || '/default-image.jpg',
+                  created_at: news.created_at,
                   category: news.category,
                 }}
               />

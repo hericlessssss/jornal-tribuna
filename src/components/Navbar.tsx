@@ -69,37 +69,43 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white">
-          <div className="flex flex-col items-center space-y-4 py-4">
+        <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-all ease-in-out duration-300">
+          <div className="flex flex-col bg-white w-2/3 h-full pt-20 pl-8 space-y-6 shadow-lg">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="self-end p-2 text-gray-900 hover:text-red-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
             <Link
               to="/"
-              className="text-gray-900 hover:text-red-600 text-base font-medium"
+              className="text-gray-900 hover:text-red-600 text-lg font-medium"
               onClick={() => setIsOpen(false)}
             >
               Início
             </Link>
             <Link
               to="/noticias"
-              className="text-gray-900 hover:text-red-600 text-base font-medium"
+              className="text-gray-900 hover:text-red-600 text-lg font-medium"
               onClick={() => setIsOpen(false)}
             >
               Últimas Notícias
             </Link>
             <Link
               to="/edicoes"
-              className="text-gray-900 hover:text-red-600 text-base font-medium"
+              className="text-gray-900 hover:text-red-600 text-lg font-medium"
               onClick={() => setIsOpen(false)}
             >
               Edições PDF
             </Link>
             <Link
               to="/contato"
-              className="text-gray-900 hover:text-red-600 text-base font-medium"
+              className="text-gray-900 hover:text-red-600 text-lg font-medium"
               onClick={() => setIsOpen(false)}
             >
               Contato
             </Link>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 pt-4 pl-2">
               <WeatherWidget />
               <RadioPlayer />
             </div>
