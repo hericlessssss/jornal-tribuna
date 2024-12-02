@@ -8,6 +8,7 @@ import AdDisplay from '../components/AdDisplay';
 import { useNewsStore } from '../store/news';
 import { useEditionsStore } from '../store/editions';
 import { useAdsStore } from '../store/ads';
+import { formatDate } from '../utils/dateFormatter';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -23,7 +24,6 @@ const Home = () => {
     fetchAds();
   }, [fetchNews, fetchEditions, fetchAds]);
 
-  // Filtrar dados de destaque e limitar as edições recentes
   const highlightedNews = news.filter((item) => item.highlighted);
   const featuredNews = news.filter((item) => item.homepage_highlight);
   const recentEditions = editions.slice(0, 6);
@@ -44,15 +44,19 @@ const Home = () => {
               <SwiperSlide key={newsItem.id}>
                 <div className="relative h-full">
                   <img
-                    src={newsItem.image_url || '/default-image.jpg'} // Fallback para imagem padrão
+                    src={newsItem.cover_image_url || '/default-image.jpg'}
                     alt={newsItem.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/default-image.jpg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-end">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-white">
                       <h2 className="text-4xl font-bold mb-4">{newsItem.title}</h2>
                       <p className="text-xl mb-6">
-                        {newsItem.content.substring(0, 200)}...
+                        {newsItem.excerpt?.replace(/<[^>]*>/g, '').substring(0, 200)}...
                       </p>
                       <Link
                         to={`/noticias/${newsItem.id}`}
@@ -99,9 +103,13 @@ const Home = () => {
                 >
                   <div className="relative">
                     <img
-                      src={edition.cover_image_url || '/default-image.jpg'} // Fallback para imagem padrão
+                      src={edition.cover_image_url || '/default-image.jpg'}
                       alt={edition.title}
                       className="w-full h-64 object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/default-image.jpg';
+                      }}
                     />
                     <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       <FileText className="w-4 h-4 inline-block mr-1" />
@@ -110,7 +118,7 @@ const Home = () => {
                   </div>
                   <div className="p-6">
                     <h3 className="text-xl font-semibold mb-2">{edition.title}</h3>
-                    <p className="text-gray-600">{edition.date}</p>
+                    <p className="text-gray-600">{formatDate(edition.created_at)}</p>
                     <div className="grid grid-cols-2 gap-4 mt-4">
                       <button
                         className="flex items-center justify-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors"
@@ -119,18 +127,14 @@ const Home = () => {
                         <Eye className="w-4 h-4" />
                         Visualizar
                       </button>
-                      <button
+                      <a
+                        href={edition.pdf_url}
+                        download
                         className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = edition.pdf_url;
-                          link.download = `${edition.title}.pdf`;
-                          link.click();
-                        }}
                       >
                         <Download className="w-4 h-4" />
                         Download
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </div>

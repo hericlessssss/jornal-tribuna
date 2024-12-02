@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useNewsStore } from '../store/news';
 import { ArrowLeft, User } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 const NewsDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,11 @@ const NewsDetail = () => {
     );
   }
 
+  // Create a temporary div to parse HTML content
+  const contentDiv = document.createElement('div');
+  contentDiv.innerHTML = selectedNews.content;
+  const cleanContent = contentDiv.textContent || contentDiv.innerText;
+
   return (
     <article className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,23 +53,26 @@ const NewsDetail = () => {
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
             <span className="text-red-600 font-semibold">{selectedNews.category}</span>
             <span>•</span>
-            <time>{new Date(selectedNews.created_at).toLocaleDateString('pt-BR')}</time>
+            <time>{formatDate(selectedNews.created_at)}</time>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-6">{selectedNews.title}</h1>
         </header>
 
         <img
-          src={selectedNews.image_url || '/default-image.jpg'}
+          src={selectedNews.cover_image_url || '/default-image.jpg'}
           alt={selectedNews.title}
           className="w-full h-[400px] object-cover rounded-lg mb-8"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/default-image.jpg';
+          }}
         />
 
         <div className="prose prose-lg max-w-none">
-          {selectedNews.content.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="mb-4 text-gray-700 leading-relaxed">
-              {paragraph.trim()}
-            </p>
-          ))}
+          <div 
+            className="text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: selectedNews.content }}
+          />
         </div>
 
         {selectedNews.author && (

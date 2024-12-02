@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import NewsCard from '../components/NewsCard';
 import { supabase } from '../lib/supabase';
-import { formatDate } from '../utils/dateFormatter';
 
 interface NewsItem {
   id: number;
   title: string;
   excerpt: string;
-  image_url: string;
+  cover_image_url: string;
   created_at: string;
   category: string;
 }
@@ -83,7 +82,7 @@ const News = () => {
                   id: news.id.toString(),
                   title: news.title,
                   excerpt: news.excerpt,
-                  image_url: news.image_url || '/default-image.jpg',
+                  cover_image_url: news.cover_image_url,
                   created_at: news.created_at,
                   category: news.category,
                 }}

@@ -7,23 +7,30 @@ interface NewsCardProps {
     id: string;
     title: string;
     excerpt: string;
-    image_url: string;
+    cover_image_url: string;
     created_at: string;
     category: string;
   };
 }
 
 export default function NewsCard({ news }: NewsCardProps) {
-  const { id, title, excerpt, image_url, created_at, category } = news;
+  const { id, title, excerpt, cover_image_url, created_at, category } = news;
+
+  // Remove HTML tags from excerpt
+  const cleanExcerpt = excerpt.replace(/<[^>]*>/g, '');
 
   return (
     <article className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]">
       <Link to={`/noticias/${id}`}>
         <img
-          src={image_url || '/default-image.jpg'}
+          src={cover_image_url || '/default-image.jpg'}
           alt={title}
           className="w-full h-48 object-cover"
           loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/default-image.jpg';
+          }}
         />
         <div className="p-4">
           <div className="flex items-center space-x-2 mb-2">
@@ -36,7 +43,7 @@ export default function NewsCard({ news }: NewsCardProps) {
             {title}
           </h3>
           <p className="text-gray-600 line-clamp-3">
-            {excerpt}
+            {cleanExcerpt}
           </p>
           <div className="mt-4">
             <span className="text-red-600 font-semibold hover:text-red-700">
