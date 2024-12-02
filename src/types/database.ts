@@ -21,61 +21,41 @@ export interface Database {
           created_at?: string;
         };
       };
-      pdf_editions: {
-        Row: {
-          id: string;
-          title: string;
-          created_at: string;
-          description: string;
-          pdf_url: string;
-          cover_image_url: string;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          created_at?: string;
-          description: string;
-          pdf_url: string;
-          cover_image_url?: string;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          created_at?: string;
-          description?: string;
-          pdf_url?: string;
-          cover_image_url?: string;
-        };
-      };
       news: {
         Row: {
           id: string;
           title: string;
           content: string;
+          excerpt: string;
+          category: string;
           cover_image_url: string;
           highlighted: boolean;
           homepage_highlight: boolean;
-          category: string;
+          author: string;
           created_at: string;
         };
         Insert: {
           id?: string;
           title: string;
           content: string;
+          excerpt: string;
+          category: string;
           cover_image_url: string;
           highlighted?: boolean;
           homepage_highlight?: boolean;
-          category: string;
+          author: string;
           created_at?: string;
         };
         Update: {
           id?: string;
           title?: string;
           content?: string;
+          excerpt?: string;
+          category?: string;
           cover_image_url?: string;
           highlighted?: boolean;
           homepage_highlight?: boolean;
-          category?: string;
+          author?: string;
           created_at?: string;
         };
       };
@@ -85,43 +65,24 @@ export interface Database {
           news_id: string;
           image_url: string;
           order: number;
+          created_at: string;
         };
         Insert: {
           id?: string;
           news_id: string;
           image_url: string;
           order: number;
+          created_at?: string;
         };
         Update: {
           id?: string;
           news_id?: string;
           image_url?: string;
           order?: number;
-        };
-      };
-      ads: {
-        Row: {
-          id: string;
-          title: string;
-          image_url: string;
-          redirect_url: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          image_url: string;
-          redirect_url: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          image_url?: string;
-          redirect_url?: string;
           created_at?: string;
         };
       };
+      // ... rest of your tables
     };
   };
 }

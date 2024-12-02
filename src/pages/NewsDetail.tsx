@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useNewsStore } from '../store/news';
 import { ArrowLeft, User } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
+import NewsImageGallery from '../components/NewsImageGallery';
 
 const NewsDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,11 +34,6 @@ const NewsDetail = () => {
     );
   }
 
-  // Create a temporary div to parse HTML content
-  const contentDiv = document.createElement('div');
-  contentDiv.innerHTML = selectedNews.content;
-  const cleanContent = contentDiv.textContent || contentDiv.innerText;
-
   return (
     <article className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,6 +63,10 @@ const NewsDetail = () => {
             target.src = '/default-image.jpg';
           }}
         />
+
+        {selectedNews.images && selectedNews.images.length > 0 && (
+          <NewsImageGallery images={selectedNews.images} />
+        )}
 
         <div className="prose prose-lg max-w-none">
           <div 
