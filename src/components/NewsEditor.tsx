@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
-import { useDropzone } from 'react-dropzone';
-import { ReactSortable } from 'react-sortablejs';
-import { supabase } from '../../lib/supabase';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { X, Image as ImageIcon, GripVertical } from 'lucide-react';
 
 interface NewsEditorProps {
   content: string;
@@ -19,193 +17,146 @@ export interface ImageItem {
   order: number;
 }
 
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'align': [] }],
+    ['link'],
+    ['clean']
+  ],
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'align',
+  'link'
+];
+
 const NewsEditor: React.FC<NewsEditorProps> = ({ content, onChange, onImagesChange, initialImages = [] }) => {
   const [images, setImages] = useState<ImageItem[]>(initialImages);
-  const [uploading, setUploading] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState('');
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
-    },
-    multiple: true,
-    onDrop: async (acceptedFiles) => {
-      try {
-        setUploading(true);
-        const uploadPromises = acceptedFiles.map(async (file) => {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('news-images')
-            .upload(fileName, file);
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('news-images')
-            .getPublicUrl(fileName);
-
-          return {
-            id: fileName,
-            url: publicUrl,
-            order: images.length
-          };
-        });
-
-        const newImages = await Promise.all(uploadPromises);
-        const updatedImages = [...images, ...newImages];
-        setImages(updatedImages);
-        onImagesChange(updatedImages);
-        toast.success('Imagens carregadas com sucesso!');
-      } catch (error) {
-        console.error('Erro ao fazer upload das imagens:', error);
-        toast.error('Erro ao carregar imagens');
-      } finally {
-        setUploading(false);
-      }
+  const handleAddImage = () => {
+    if (!newImageUrl) {
+      toast.error('Por favor, insira uma URL de imagem');
+      return;
     }
-  });
 
-  const handleImageSort = (newOrder: ImageItem[]) => {
-    const reorderedImages = newOrder.map((item, index) => ({
-      ...item,
-      order: index
-    }));
-    setImages(reorderedImages);
-    onImagesChange(reorderedImages);
+    if (!isValidUrl(newImageUrl)) {
+      toast.error('Por favor, insira uma URL válida');
+      return;
+    }
+
+    const newImage: ImageItem = {
+      id: Date.now().toString(),
+      url: newImageUrl,
+      order: images.length
+    };
+
+    const updatedImages = [...images, newImage];
+    setImages(updatedImages);
+    onImagesChange(updatedImages);
+    setNewImageUrl('');
+    toast.success('Imagem adicionada com sucesso!');
   };
 
-  const handleImageDelete = async (imageId: string) => {
-    try {
-      await supabase.storage
-        .from('news-images')
-        .remove([imageId]);
-
-      const updatedImages = images
-        .filter(img => img.id !== imageId)
-        .map((img, index) => ({ ...img, order: index }));
-      
-      setImages(updatedImages);
-      onImagesChange(updatedImages);
-      toast.success('Imagem removida com sucesso!');
-    } catch (error) {
-      console.error('Erro ao remover imagem:', error);
-      toast.error('Erro ao remover imagem');
-    }
+  const handleRemoveImage = (id: string) => {
+    const updatedImages = images
+      .filter(img => img.id !== id)
+      .map((img, index) => ({ ...img, order: index }));
+    
+    setImages(updatedImages);
+    onImagesChange(updatedImages);
+    toast.success('Imagem removida com sucesso!');
   };
 
   const insertImage = (url: string) => {
     const imageHtml = `<img src="${url}" alt="Imagem da notícia" class="my-4 rounded-lg max-w-full h-auto" />`;
-    if (window.tinymce) {
-      window.tinymce.activeEditor.insertContent(imageHtml);
+    const editor = document.querySelector('.ql-editor');
+    if (editor) {
+      const range = window.getSelection()?.getRangeAt(0);
+      if (range) {
+        const img = document.createElement('div');
+        img.innerHTML = imageHtml;
+        range.insertNode(img.firstChild as Node);
+      } else {
+        editor.innerHTML += imageHtml;
+      }
+    }
+  };
+
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <Editor
-          apiKey="qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc"
+        <ReactQuill
+          theme="snow"
           value={content}
-          onEditorChange={onChange}
-          init={{
-            height: 500,
-            menubar: true,
-            readonly: false,
-            plugins: [
-              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-              'insertdatetime', 'media', 'table', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-              'bold italic forecolor backcolor | alignleft aligncenter ' +
-              'alignright alignjustify | bullist numlist outdent indent | ' +
-              'removeformat | help',
-            content_style: `
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-                font-size: 16px;
-                line-height: 1.5;
-                padding: 1rem;
-              }
-              img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 0.5rem;
-                margin: 1rem 0;
-              }
-              p { margin: 0 0 1rem 0; }
-              h1, h2, h3, h4, h5, h6 { margin: 1.5rem 0 1rem; }
-            `,
-            branding: false,
-            promotion: false,
-            language: 'pt_BR',
-            language_url: '/tinymce/langs/pt_BR.js',
-            setup: (editor) => {
-              editor.on('init', () => {
-                editor.getContainer().style.visibility = 'visible';
-              });
-            }
-          }}
+          onChange={onChange}
+          modules={modules}
+          formats={formats}
+          className="h-[400px] mb-12"
         />
       </div>
       
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Gerenciar Imagens</h3>
         
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
-            uploading ? 'bg-gray-50' : 'hover:border-red-500'
-          }`}
-        >
-          <input {...getInputProps()} disabled={uploading} />
-          <div className="flex flex-col items-center">
-            <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-            <p className="text-center text-gray-600">
-              {uploading ? 'Enviando imagens...' : 'Arraste e solte imagens aqui, ou clique para selecionar'}
-            </p>
-          </div>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={newImageUrl}
+            onChange={(e) => setNewImageUrl(e.target.value)}
+            placeholder="Cole a URL da imagem aqui"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          />
+          <button
+            onClick={handleAddImage}
+            className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
 
         {images.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200">
-            <ReactSortable
-              list={images}
-              setList={handleImageSort}
-              animation={200}
-              handle=".handle"
-              className="divide-y divide-gray-200"
-            >
-              {images.map((image) => (
-                <div key={image.id} className="flex items-center p-3 gap-4">
-                  <div className="handle cursor-move text-gray-400 hover:text-gray-600">
-                    <GripVertical className="w-5 h-5" />
-                  </div>
-                  <img
-                    src={image.url}
-                    alt="Uploaded"
-                    className="w-20 h-20 object-cover rounded"
-                  />
-                  <div className="flex-grow">
-                    <button
-                      type="button"
-                      onClick={() => insertImage(image.url)}
-                      className="text-sm text-blue-600 hover:text-blue-800"
-                    >
-                      Inserir no texto
-                    </button>
-                  </div>
+          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+            {images.map((image) => (
+              <div key={image.id} className="flex items-center p-3 gap-4">
+                <img
+                  src={image.url}
+                  alt="Preview"
+                  className="w-20 h-20 object-cover rounded"
+                />
+                <div className="flex-grow">
                   <button
                     type="button"
-                    onClick={() => handleImageDelete(image.id)}
-                    className="text-red-600 hover:text-red-800 p-1"
+                    onClick={() => insertImage(image.url)}
+                    className="text-sm text-blue-600 hover:text-blue-800"
                   >
-                    <X className="w-5 h-5" />
+                    Inserir no texto
                   </button>
                 </div>
-              ))}
-            </ReactSortable>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(image.id)}
+                  className="text-red-600 hover:text-red-800 p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
