@@ -52,7 +52,7 @@ const NewsEditor: React.FC<NewsEditorProps> = ({ content, onChange, onImagesChan
     }
 
     const newImage: ImageItem = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(), // Using crypto.randomUUID() for unique IDs
       url: newImageUrl,
       order: images.length
     };

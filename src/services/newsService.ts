@@ -18,6 +18,7 @@ export interface NewsItem {
 
 export async function createNews(news: Omit<NewsItem, 'id' | 'created_at'>): Promise<NewsItem> {
   try {
+    // First, insert the news article
     const { data: newsData, error: newsError } = await supabase
       .from('news')
       .insert([{
@@ -35,22 +36,31 @@ export async function createNews(news: Omit<NewsItem, 'id' | 'created_at'>): Pro
       .single();
 
     if (newsError) throw newsError;
+    if (!newsData) throw new Error('No data returned after news creation');
 
+    // If there are images, insert them with the correct news_id
     if (news.images && news.images.length > 0) {
+      const newsImages = news.images.map(img => ({
+        news_id: newsData.id, // Using the UUID from the newly created news
+        image_url: img.url,
+        order: img.order
+      }));
+
       const { error: imagesError } = await supabase
         .from('news_images')
-        .insert(
-          news.images.map(img => ({
-            news_id: newsData.id,
-            image_url: img.url,
-            order: img.order
-          }))
-        );
+        .insert(newsImages);
 
-      if (imagesError) throw imagesError;
+      if (imagesError) {
+        // If image insertion fails, we should probably delete the news article
+        await supabase.from('news').delete().eq('id', newsData.id);
+        throw imagesError;
+      }
     }
 
-    return newsData;
+    return {
+      ...newsData,
+      images: news.images
+    };
   } catch (error) {
     logError('NewsService.createNews', error);
     throw error;
@@ -76,29 +86,34 @@ export async function updateNews(id: string, updates: Partial<NewsItem>): Promis
       .single();
 
     if (newsError) throw newsError;
+    if (!newsData) throw new Error('No data returned after news update');
 
     if (updates.images !== undefined) {
+      // Delete existing images
       await supabase
         .from('news_images')
         .delete()
         .eq('news_id', id);
 
       if (updates.images.length > 0) {
+        const newsImages = updates.images.map(img => ({
+          news_id: id,
+          image_url: img.url,
+          order: img.order
+        }));
+
         const { error: imagesError } = await supabase
           .from('news_images')
-          .insert(
-            updates.images.map(img => ({
-              news_id: id,
-              image_url: img.url,
-              order: img.order
-            }))
-          );
+          .insert(newsImages);
 
         if (imagesError) throw imagesError;
       }
     }
 
-    return newsData;
+    return {
+      ...newsData,
+      images: updates.images
+    };
   } catch (error) {
     logError('NewsService.updateNews', error);
     throw error;
@@ -107,6 +122,7 @@ export async function updateNews(id: string, updates: Partial<NewsItem>): Promis
 
 export async function deleteNews(id: string): Promise<void> {
   try {
+    // Images will be automatically deleted due to foreign key constraint
     const { error } = await supabase
       .from('news')
       .delete()
@@ -141,7 +157,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
         id: img.id,
         url: img.image_url,
         order: img.order
-      }))
+      })) || []
     })) || [];
   } catch (error) {
     logError('NewsService.fetchNews', error);
