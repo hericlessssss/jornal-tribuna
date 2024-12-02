@@ -20,19 +20,19 @@ function App() {
   const { fetchCount, increment } = useVisitorStore();
 
   useEffect(() => {
-    // Initialize visitor counter
-    const initializeVisitorCounter = async () => {
+    const initVisitorCounter = async () => {
       await fetchCount();
+      const lastVisit = localStorage.getItem('lastVisit');
+      const now = new Date().toISOString();
       
-      // Check if this is a new session
-      const hasVisited = sessionStorage.getItem('hasVisited');
-      if (!hasVisited) {
+      // Increment counter if last visit was more than 24 hours ago or never visited
+      if (!lastVisit || new Date(lastVisit).getTime() + 24 * 60 * 60 * 1000 < Date.now()) {
         await increment();
-        sessionStorage.setItem('hasVisited', 'true');
+        localStorage.setItem('lastVisit', now);
       }
     };
 
-    initializeVisitorCounter();
+    initVisitorCounter();
   }, [fetchCount, increment]);
 
   return (
