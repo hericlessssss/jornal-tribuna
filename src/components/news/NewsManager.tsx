@@ -3,11 +3,10 @@ import { useNewsStore } from '../../store/news';
 import NewsForm from './NewsForm';
 import NewsList from './NewsList';
 import toast from 'react-hot-toast';
-import type { ImageItem } from './NewsEditor';
 import { createNews, updateNews, deleteNews } from '../../services/newsService';
 
 interface NewsFormData {
-  id?: string;
+  id?: number;
   title: string;
   excerpt: string;
   content: string;
@@ -15,7 +14,6 @@ interface NewsFormData {
   cover_image_url: string;
   highlighted: boolean;
   homepage_highlight: boolean;
-  images?: ImageItem[];
 }
 
 const initialFormData: NewsFormData = {
@@ -26,7 +24,6 @@ const initialFormData: NewsFormData = {
   cover_image_url: '',
   highlighted: false,
   homepage_highlight: false,
-  images: [],
 };
 
 const NewsManager = () => {
@@ -49,14 +46,6 @@ const NewsManager = () => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: checked }));
-  };
-
-  const handleContentChange = (content: string) => {
-    setFormData(prev => ({ ...prev, content }));
-  };
-
-  const handleImagesChange = (images: ImageItem[]) => {
-    setFormData(prev => ({ ...prev, images }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,7 +77,7 @@ const NewsManager = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir esta notícia?')) {
       try {
         await deleteNews(id);
@@ -115,8 +104,6 @@ const NewsManager = () => {
         onSubmit={handleSubmit}
         onChange={handleChange}
         onCheckboxChange={handleCheckboxChange}
-        onContentChange={handleContentChange}
-        onImagesChange={handleImagesChange}
       />
       <NewsList
         news={news}

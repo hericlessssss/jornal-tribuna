@@ -13,7 +13,6 @@ import RadioPlayer from "./components/RadioPlayer";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
-import WeatherWidget from "./components/WeatherWidget";
 import { useVisitorStore } from "./store/visitors";
 
 function App() {

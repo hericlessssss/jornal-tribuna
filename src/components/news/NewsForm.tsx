@@ -1,10 +1,8 @@
 import React from 'react';
 import { PlusCircle } from 'lucide-react';
-import NewsEditor from './NewsEditor';
-import type { ImageItem } from './NewsEditor';
 
 interface NewsFormData {
-  id?: string;
+  id?: number;
   title: string;
   excerpt: string;
   content: string;
@@ -12,8 +10,6 @@ interface NewsFormData {
   cover_image_url: string;
   highlighted: boolean;
   homepage_highlight: boolean;
-  author: string;
-  images?: ImageItem[];
 }
 
 interface NewsFormProps {
@@ -23,8 +19,6 @@ interface NewsFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onContentChange: (content: string) => void;
-  onImagesChange: (images: ImageItem[]) => void;
 }
 
 const NewsForm: React.FC<NewsFormProps> = ({
@@ -34,8 +28,6 @@ const NewsForm: React.FC<NewsFormProps> = ({
   onSubmit,
   onChange,
   onCheckboxChange,
-  onContentChange,
-  onImagesChange,
 }) => {
   return (
     <form onSubmit={onSubmit} className="bg-white rounded-lg shadow-lg p-6">
@@ -49,21 +41,6 @@ const NewsForm: React.FC<NewsFormProps> = ({
             id="title"
             name="title"
             value={formData.title}
-            onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="author" className="block text-sm font-medium text-gray-700">
-            Autor
-          </label>
-          <input
-            type="text"
-            id="author"
-            name="author"
-            value={formData.author}
             onChange={onChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
             required
@@ -86,14 +63,17 @@ const NewsForm: React.FC<NewsFormProps> = ({
         </div>
 
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
             Conteúdo
           </label>
-          <NewsEditor
-            content={formData.content}
-            onChange={onContentChange}
-            onImagesChange={onImagesChange}
-            initialImages={formData.images}
+          <textarea
+            id="content"
+            name="content"
+            rows={6}
+            value={formData.content}
+            onChange={onChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+            required
           />
         </div>
 

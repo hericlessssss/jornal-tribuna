@@ -3,7 +3,6 @@ import { PlusCircle, Trash, Edit } from 'lucide-react';
 import { useNewsStore } from '../store/news';
 import NewsEditor from './NewsEditor';
 import toast from 'react-hot-toast';
-import type { ImageItem } from './NewsEditor';
 import { createNews, updateNews, deleteNews } from '../services/newsService';
 
 interface NewsFormData {
@@ -15,7 +14,6 @@ interface NewsFormData {
   cover_image_url: string;
   highlighted: boolean;
   homepage_highlight: boolean;
-  images?: ImageItem[];
 }
 
 const initialFormData: NewsFormData = {
@@ -26,7 +24,6 @@ const initialFormData: NewsFormData = {
   cover_image_url: '',
   highlighted: false,
   homepage_highlight: false,
-  images: [],
 };
 
 const NewsManager = () => {
@@ -55,10 +52,6 @@ const NewsManager = () => {
     setFormData(prev => ({ ...prev, content }));
   };
 
-  const handleImagesChange = (images: ImageItem[]) => {
-    setFormData(prev => ({ ...prev, images }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,7 +63,7 @@ const NewsManager = () => {
       }
 
       if (isEditing && formData.id) {
-        await updateNews(formData.id, formData);
+        await updateNews(parseInt(formData.id), formData);
         toast.success('Notícia atualizada com sucesso!');
       } else {
         await createNews(formData);
@@ -91,7 +84,7 @@ const NewsManager = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta notícia?')) {
       try {
-        await deleteNews(id);
+        await deleteNews(parseInt(id));
         toast.success('Notícia excluída com sucesso!');
         fetchNews();
       } catch (error) {
@@ -147,8 +140,6 @@ const NewsManager = () => {
             <NewsEditor
               content={formData.content}
               onChange={handleContentChange}
-              onImagesChange={handleImagesChange}
-              initialImages={formData.images}
             />
           </div>
 
@@ -272,7 +263,7 @@ const NewsManager = () => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => newsItem.id && handleDelete(newsItem.id)}
+                      onClick={() => newsItem.id && handleDelete(newsItem.id.toString())}
                       className="text-red-600 hover:text-red-800"
                       title="Excluir"
                     >
