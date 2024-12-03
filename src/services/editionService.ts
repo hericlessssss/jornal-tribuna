@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { logError } from '../utils/errorHandler';
 import { generatePDFThumbnail } from '../utils/pdfUtils';
+import { sanitizeFilename, generateThumbnailFilename } from '../utils/fileUtils';
 
 export interface PDFEdition {
   id?: string;
@@ -13,24 +14,26 @@ export interface PDFEdition {
 
 export async function uploadPDFEdition(file: File, metadata: Omit<PDFEdition, 'pdf_url' | 'cover_image_url'>): Promise<PDFEdition> {
   try {
-    // 1. Upload PDF file to storage
-    const pdfFileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    // 1. Sanitize filename
+    const pdfFileName = sanitizeFilename(file.name);
+    
+    // 2. Upload PDF file to storage
     const { data: pdfData, error: pdfError } = await supabase.storage
       .from('pdf-editions')
       .upload(pdfFileName, file);
 
     if (pdfError) throw pdfError;
 
-    // 2. Get public URL for the PDF
+    // 3. Get public URL for the PDF
     const { data: { publicUrl: pdfUrl } } = supabase.storage
       .from('pdf-editions')
       .getPublicUrl(pdfFileName);
 
-    // 3. Generate thumbnail
+    // 4. Generate thumbnail
     const thumbnail = await generatePDFThumbnail(URL.createObjectURL(file));
     
-    // 4. Upload thumbnail
-    const thumbnailFileName = pdfFileName.replace('.pdf', '-thumb.png');
+    // 5. Upload thumbnail with sanitized name
+    const thumbnailFileName = generateThumbnailFilename(pdfFileName);
     const thumbnailBlob = await (await fetch(thumbnail)).blob();
     
     const { error: thumbError } = await supabase.storage
@@ -39,12 +42,12 @@ export async function uploadPDFEdition(file: File, metadata: Omit<PDFEdition, 'p
 
     if (thumbError) throw thumbError;
 
-    // 5. Get public URL for the thumbnail
+    // 6. Get public URL for the thumbnail
     const { data: { publicUrl: coverUrl } } = supabase.storage
       .from('pdf-editions')
       .getPublicUrl(thumbnailFileName);
 
-    // 6. Save edition data to database
+    // 7. Save edition data to database
     const { data: edition, error: dbError } = await supabase
       .from('pdf_editions')
       .insert([{
