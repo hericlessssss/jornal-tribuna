@@ -2,31 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Download, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PDFViewer from '../components/PDFViewer';
-import { fetchEditions } from '../services/editionService';
-import type { PDFEdition } from '../services/editionService';
+import { useEditionsStore } from '../store/editions';
 import { formatDate } from '../utils/dateFormatter';
 
 const PDFEditions = () => {
-  const [editions, setEditions] = useState<PDFEdition[]>([]);
+  const { editions, loading, fetchEditions } = useEditionsStore();
   const [visibleCount, setVisibleCount] = useState(9);
   const [selectedPDF, setSelectedPDF] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadEditions = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchEditions();
-        setEditions(data);
-      } catch (error) {
-        console.error('Error loading editions:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadEditions();
-  }, []);
+    fetchEditions();
+  }, [fetchEditions]);
 
   const loadMoreEditions = () => {
     setVisibleCount((prev) => prev + 9);
@@ -66,15 +52,15 @@ const PDFEditions = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {editions.slice(0, visibleCount).map((edition) => (
                 <div key={edition.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="relative">
+                  <div className="relative bg-gray-100 aspect-[1/1.4]">
                     {edition.cover_image_url ? (
                       <img
                         src={edition.cover_image_url}
                         alt={edition.title}
-                        className="w-full object-cover aspect-[8.5/11]"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
-                      <div className="w-full aspect-[8.5/11] bg-gray-200 flex items-center justify-center">
+                      <div className="w-full h-full flex items-center justify-center">
                         <FileText className="w-12 h-12 text-gray-400" />
                       </div>
                     )}

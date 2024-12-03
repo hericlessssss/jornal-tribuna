@@ -10,7 +10,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-24">
           {/* Logo e Menu Toggle no Mobile */}
           <div className="flex items-center space-x-4 md:space-x-0">
             {/* Menu Mobile Toggle */}
@@ -24,11 +24,11 @@ const Navbar = () => {
             </div>
 
             {/* Logo */}
-            <Link to="/">
+            <Link to="/" className="flex items-center">
               <img
-                src="https://i.imgur.com/3kz3bWp.png"
+                src="https://i.imgur.com/bQJcSML.png"
                 alt="Logo Jornal Tribuna"
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
             </Link>
           </div>
@@ -70,14 +70,23 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40">
-          <div className="flex flex-col bg-white w-4/5 h-full pt-20">
-            <div className="px-6 pb-4 border-b border-gray-200">
-              <div className="flex items-center justify-between space-x-4">
+          <div className="flex flex-col bg-white w-4/5 h-full">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold">Menu</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 text-gray-500 hover:text-red-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex flex-col space-y-4">
                 <WeatherWidget />
                 <RadioPlayer />
               </div>
             </div>
-            <div className="flex flex-col px-6 py-4 space-y-4">
+            <div className="flex flex-col px-6 py-6 space-y-6">
               <Link
                 to="/"
                 className="text-gray-900 hover:text-red-600 text-lg font-medium"

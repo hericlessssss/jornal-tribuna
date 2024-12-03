@@ -1,22 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, ExternalLink } from 'lucide-react';
 import { useAdsStore } from '../store/ads';
 import toast from 'react-hot-toast';
 
 interface AdFormData {
   title: string;
-  image_url: string;  // Alterar para armazenar uma URL de imagem
+  image_url: string;
   redirect_url: string;
 }
 
 const AdsManager = () => {
-  const { ads, loading, fetchAds, addAd, deleteAd, updateAd } = useAdsStore();
+  const { ads, addAd, deleteAd, fetchAds } = useAdsStore();
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<AdFormData>({
     title: '',
-    image_url: '', // Agora armazena o link direto da imagem
+    image_url: '',
     redirect_url: '',
   });
+
+  useEffect(() => {
+    fetchAds();
+  }, [fetchAds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,32 +29,14 @@ const AdsManager = () => {
       return;
     }
 
-    try {
-      // Criar o anúncio no banco de dados com a URL da imagem
-      await addAd({
-        title: formData.title,
-        image_url: formData.image_url,  // Usar a URL fornecida
-        redirect_url: formData.redirect_url,
-      });
-
-      toast.success('Anúncio adicionado com sucesso!');
-      setIsAdding(false);
-      setFormData({ title: '', image_url: '', redirect_url: '' });
-    } catch (error) {
-      console.error('Erro ao adicionar anúncio:', error);
-      toast.error('Erro ao adicionar anúncio');
-    }
+    await addAd(formData);
+    setIsAdding(false);
+    setFormData({ title: '', image_url: '', redirect_url: '' });
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este anúncio?')) {
-      try {
-        await deleteAd(id);
-        toast.success('Anúncio excluído com sucesso!');
-      } catch (error) {
-        console.error('Erro ao excluir anúncio:', error);
-        toast.error('Erro ao excluir anúncio');
-      }
+      await deleteAd(id);
     }
   };
 
@@ -77,7 +63,7 @@ const AdsManager = () => {
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                 required
               />
@@ -90,7 +76,7 @@ const AdsManager = () => {
               <input
                 type="url"
                 value={formData.image_url}
-                onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                 required
               />
@@ -103,7 +89,7 @@ const AdsManager = () => {
               <input
                 type="url"
                 value={formData.redirect_url}
-                onChange={(e) => setFormData((prev) => ({ ...prev, redirect_url: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, redirect_url: e.target.value }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                 required
               />
@@ -130,9 +116,12 @@ const AdsManager = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {ads.map((ad) => (
-          <div key={ad.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div
+            key={ad.id}
+            className="bg-white rounded-lg shadow-lg overflow-hidden"
+          >
             <img
-              src={ad.image_url}  // Agora exibe o link da imagem fornecida
+              src={ad.image_url}
               alt={ad.title}
               className="w-full h-48 object-cover"
             />
@@ -147,10 +136,11 @@ const AdsManager = () => {
                 <ExternalLink className="w-4 h-4" />
                 Ver destino
               </a>
-              <div className="mt-4 flex justify-end space-x-2">
+              <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => handleDelete(ad.id)}
                   className="p-2 text-red-600 hover:text-red-800"
+                  title="Excluir"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>

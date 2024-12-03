@@ -1,8 +1,14 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabase';  // Verifique se o Supabase está configurado corretamente
-import type { Database } from '../types/database';
+import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
-type Ad = Database['public']['Tables']['ads']['Row'];
+interface Ad {
+  id: string;
+  title: string;
+  image_url: string;
+  redirect_url: string;
+  created_at?: string;
+}
 
 interface AdsState {
   ads: Ad[];
@@ -10,7 +16,6 @@ interface AdsState {
   fetchAds: () => Promise<void>;
   addAd: (ad: Omit<Ad, 'id' | 'created_at'>) => Promise<void>;
   deleteAd: (id: string) => Promise<void>;
-  updateAd: (id: string, updates: Partial<Ad>) => Promise<void>;
 }
 
 export const useAdsStore = create<AdsState>((set, get) => ({
@@ -18,7 +23,6 @@ export const useAdsStore = create<AdsState>((set, get) => ({
   loading: false,
 
   fetchAds: async () => {
-    set({ loading: true });
     try {
       const { data, error } = await supabase
         .from('ads')
@@ -26,12 +30,10 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      set({ ads: data ?? [] }); // Adicionando fallback para evitar dados indefinidos
+      set({ ads: data || [] });
     } catch (error) {
-      console.error('Error fetching ads:', error);
-      set({ ads: [] }); // Se ocorrer erro, esvaziar os anúncios
-    } finally {
-      set({ loading: false });
+      console.error('Erro ao carregar anúncios:', error);
+      toast.error('Não foi possível carregar os anúncios');
     }
   },
 
@@ -42,50 +44,33 @@ export const useAdsStore = create<AdsState>((set, get) => ({
         .insert([ad])
         .select()
         .single();
-  
+
       if (error) throw error;
+      
       set({ ads: [data, ...get().ads] });
+      toast.success('Anúncio adicionado com sucesso!');
     } catch (error) {
       console.error('Erro ao adicionar anúncio:', error);
+      toast.error('Não foi possível adicionar o anúncio');
     }
   },
 
   deleteAd: async (id) => {
+    const loadingToast = toast.loading('Excluindo anúncio...');
+    
     try {
       const { error } = await supabase
         .from('ads')
         .delete()
-        .eq('id', id);
+        .match({ id });
 
       if (error) throw error;
-      set({ ads: get().ads.filter((ad) => ad.id !== id) }); // Remover anúncio da lista após deletado
-    } catch (error) {
-      console.error('Error deleting ad:', error);
-    }
-  },
 
-  updateAd: async (id, updates) => {
-    try {
-      const { data, error } = await supabase
-        .from('ads')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      if (data) {
-        set({
-          ads: get().ads.map((ad) =>
-            ad.id === id ? { ...ad, ...data } : ad
-          ),
-        }); // Atualizar o anúncio no estado
-      }
+      set({ ads: get().ads.filter(ad => ad.id !== id) });
+      toast.success('Anúncio excluído com sucesso!', { id: loadingToast });
     } catch (error) {
-      console.error('Error updating ad:', error);
+      console.error('Erro ao excluir anúncio:', error);
+      toast.error('Não foi possível excluir o anúncio', { id: loadingToast });
     }
-  },
+  }
 }));
-
-// Executando `fetchAds` sempre que o store for carregado
-useAdsStore.getState().fetchAds();

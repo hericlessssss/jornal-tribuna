@@ -38,7 +38,7 @@ const WeatherWidget = () => {
       if (retryCount < 3) {
         getWeather();
       }
-    }, 300000);
+    }, 300000); // Update every 5 minutes
 
     return () => clearInterval(interval);
   }, [retryCount]);

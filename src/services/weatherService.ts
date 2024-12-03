@@ -15,7 +15,7 @@ export async function fetchWeatherData(city: string): Promise<WeatherData> {
 
   try {
     const response = await fetch(
-      `/api/weather/weather?q=${encodeURIComponent(city)},BR&units=metric&appid=${apiKey}`,
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},BR&units=metric&appid=${apiKey}`,
       {
         headers: {
           'Accept': 'application/json',

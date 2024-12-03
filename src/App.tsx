@@ -20,14 +20,18 @@ function App() {
 
   useEffect(() => {
     const initVisitorCounter = async () => {
-      await fetchCount();
-      const lastVisit = localStorage.getItem('lastVisit');
-      const now = new Date().toISOString();
-      
-      // Increment counter if last visit was more than 24 hours ago or never visited
-      if (!lastVisit || new Date(lastVisit).getTime() + 24 * 60 * 60 * 1000 < Date.now()) {
-        await increment();
-        localStorage.setItem('lastVisit', now);
+      try {
+        await fetchCount();
+        const lastVisit = localStorage.getItem('lastVisit');
+        const now = new Date().toISOString();
+        
+        // Increment counter if last visit was more than 24 hours ago or never visited
+        if (!lastVisit || new Date(lastVisit).getTime() + 24 * 60 * 60 * 1000 < Date.now()) {
+          await increment();
+          localStorage.setItem('lastVisit', now);
+        }
+      } catch (error) {
+        console.error('Error initializing visitor counter:', error);
       }
     };
 
@@ -62,6 +66,7 @@ function App() {
         />
 
         <Navbar />
+        
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -71,15 +76,36 @@ function App() {
             <Route path="/contato" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route
-              path="/admin"
+              path="/admin/*"
               element={
                 <ProtectedRoute>
                   <Admin />
                 </ProtectedRoute>
               }
             />
+            {/* Fallback route for 404 */}
+            <Route
+              path="*"
+              element={
+                <div className="flex items-center justify-center min-h-[60vh]">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Página não encontrada</h1>
+                    <p className="text-gray-600 mb-8">
+                      A página que você está procurando não existe ou foi movida.
+                    </p>
+                    <a
+                      href="/"
+                      className="inline-block bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                    >
+                      Voltar para a página inicial
+                    </a>
+                  </div>
+                </div>
+              }
+            />
           </Routes>
         </main>
+
         <Footer />
         <RadioPlayer />
       </div>
