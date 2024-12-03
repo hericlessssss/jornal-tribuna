@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Download, Eye } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import PDFViewer from '../components/PDFViewer';
 import { useEditionsStore } from '../store/editions';
 import { formatDate } from '../utils/dateFormatter';
 
+const EDITIONS_PER_PAGE = 6;
+
 const PDFEditions = () => {
   const { editions, loading, fetchEditions } = useEditionsStore();
-  const [visibleCount, setVisibleCount] = useState(9);
+  const [visibleCount, setVisibleCount] = useState(EDITIONS_PER_PAGE);
   const [selectedPDF, setSelectedPDF] = useState<string | null>(null);
 
   useEffect(() => {
@@ -15,7 +16,7 @@ const PDFEditions = () => {
   }, [fetchEditions]);
 
   const loadMoreEditions = () => {
-    setVisibleCount((prev) => prev + 9);
+    setVisibleCount((prev) => prev + EDITIONS_PER_PAGE);
   };
 
   if (loading) {
@@ -30,6 +31,9 @@ const PDFEditions = () => {
       </div>
     );
   }
+
+  const visibleEditions = editions.slice(0, visibleCount);
+  const hasMoreEditions = visibleCount < editions.length;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -50,8 +54,11 @@ const PDFEditions = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {editions.slice(0, visibleCount).map((edition) => (
-                <div key={edition.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              {visibleEditions.map((edition) => (
+                <div
+                  key={edition.id}
+                  className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02]"
+                >
                   <div className="relative bg-gray-100 aspect-[1/1.4]">
                     {edition.cover_image_url ? (
                       <img
@@ -64,10 +71,6 @@ const PDFEditions = () => {
                         <FileText className="w-12 h-12 text-gray-400" />
                       </div>
                     )}
-                    <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      <FileText className="w-4 h-4 inline-block mr-1" />
-                      {edition.title}
-                    </div>
                   </div>
 
                   <div className="p-6">
@@ -100,11 +103,11 @@ const PDFEditions = () => {
               ))}
             </div>
 
-            {visibleCount < editions.length && (
-              <div className="text-center mt-8">
+            {hasMoreEditions && (
+              <div className="text-center mt-12">
                 <button
                   onClick={loadMoreEditions}
-                  className="px-6 py-3 text-lg font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Ver mais edições
                 </button>
@@ -113,17 +116,10 @@ const PDFEditions = () => {
           </>
         )}
 
-        <div className="text-center mt-16">
-          <Link
-            to="/contato"
-            className="inline-flex items-center text-red-600 hover:text-red-700 font-medium text-lg"
-          >
-            Não encontrou a edição que procura? Entre em contato conosco que lhe enviamos!
-          </Link>
-        </div>
+        {selectedPDF && (
+          <PDFViewer pdfUrl={selectedPDF} onClose={() => setSelectedPDF(null)} />
+        )}
       </div>
-
-      {selectedPDF && <PDFViewer pdfUrl={selectedPDF} onClose={() => setSelectedPDF(null)} />}
     </div>
   );
 };

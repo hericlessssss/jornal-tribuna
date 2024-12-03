@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import { FileText, Download, Eye } from 'lucide-react';
+import { FileText, Download, Eye, ArrowRight } from 'lucide-react';
 import NewsCard from '../components/NewsCard';
 import AdDisplay from '../components/AdDisplay';
 import { useNewsStore } from '../store/news';
@@ -26,7 +26,7 @@ const Home = () => {
 
   const highlightedNews = news.filter((item) => item.highlighted);
   const featuredNews = news.filter((item) => item.homepage_highlight);
-  const recentEditions = editions.slice(0, 6);
+  const recentEditions = editions.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,7 +34,7 @@ const Home = () => {
         {/* Hero Section with Slider */}
         <section className="py-4">
           {highlightedNews.length > 0 ? (
-            <div className="relative">
+            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg">
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation
@@ -46,48 +46,45 @@ const Home = () => {
                 }}
                 loop={true}
                 speed={800}
-                className="rounded-xl overflow-hidden"
               >
                 {highlightedNews.map((newsItem) => (
                   <SwiperSlide key={newsItem.id}>
-                    <div className="bg-white">
-                      <div className="flex flex-col md:flex-row">
-                        {/* Image Container */}
-                        <div className="w-full md:w-1/2 bg-gray-100">
-                          <div className="relative aspect-[16/9] md:aspect-[4/3]">
-                            <img
-                              src={newsItem.cover_image_url || '/default-image.jpg'}
-                              alt={newsItem.title}
-                              className="absolute inset-0 w-full h-full object-contain"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = '/default-image.jpg';
-                              }}
-                            />
-                          </div>
+                    <div className="flex flex-col md:flex-row">
+                      {/* Image Container */}
+                      <div className="w-full md:w-1/2">
+                        <div className="relative">
+                          <img
+                            src={newsItem.cover_image_url || '/default-image.jpg'}
+                            alt={newsItem.title}
+                            className="news-slider-image"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/default-image.jpg';
+                            }}
+                          />
                         </div>
+                      </div>
 
-                        {/* Content Container */}
-                        <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-                          <div className="flex-grow">
-                            <span className="inline-block px-3 py-1 bg-red-600 text-white text-sm font-medium rounded-full mb-4">
-                              {newsItem.category}
-                            </span>
-                            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 line-clamp-3">
-                              {newsItem.title}
-                            </h2>
-                            <p className="text-gray-600 mb-6 line-clamp-4">
-                              {newsItem.excerpt?.replace(/<[^>]*>/g, '').substring(0, 300)}...
-                            </p>
-                          </div>
-                          <div className="mt-auto">
-                            <Link
-                              to={`/noticias/${newsItem.id}`}
-                              className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                              Ler mais
-                            </Link>
-                          </div>
+                      {/* Content Container */}
+                      <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
+                        <div>
+                          <span className="inline-block px-3 py-1 bg-red-600 text-white text-sm font-medium rounded-full mb-4">
+                            {newsItem.category}
+                          </span>
+                          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 line-clamp-3">
+                            {newsItem.title}
+                          </h2>
+                          <p className="text-gray-600 line-clamp-4">
+                            {newsItem.excerpt?.replace(/<[^>]*>/g, '')}
+                          </p>
+                        </div>
+                        <div className="mt-6">
+                          <Link
+                            to={`/noticias/${newsItem.id}`}
+                            className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                          >
+                            Ler mais
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -109,7 +106,16 @@ const Home = () => {
 
         {/* Latest Editions Section */}
         <section className="py-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Últimas Edições</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Últimas Edições</h2>
+            <Link
+              to="/edicoes"
+              className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold"
+            >
+              Ver todas as edições
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {recentEditions.map((edition) => (
               <div

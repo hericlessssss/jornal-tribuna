@@ -9,12 +9,12 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex justify-between items-center h-24">
           {/* Logo e Menu Toggle no Mobile */}
-          <div className="flex items-center space-x-4 md:space-x-0">
+          <div className="flex items-center">
             {/* Menu Mobile Toggle */}
-            <div className="md:hidden flex items-center">
+            <div className="md:hidden flex items-center mr-2">
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 text-gray-900 hover:text-red-600 focus:outline-none"
@@ -24,11 +24,11 @@ const Navbar = () => {
             </div>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center py-2">
               <img
                 src="https://i.imgur.com/bQJcSML.png"
                 alt="Logo Jornal Tribuna"
-                className="h-16 w-auto"
+                className="h-20 w-auto"
               />
             </Link>
           </div>
