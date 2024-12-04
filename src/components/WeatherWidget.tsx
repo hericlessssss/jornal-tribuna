@@ -3,6 +3,14 @@ import { Cloud, CloudRain, Sun, CloudSun, Loader2, CloudFog } from 'lucide-react
 import { fetchWeatherData } from '../services/weatherService';
 import type { WeatherData, WeatherCondition } from '../types/weather';
 
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const WEATHER_CACHE_KEY = 'weatherData';
+const LAST_FETCH_KEY = 'lastWeatherFetch';
+
+interface CachedWeatherData extends WeatherData {
+  timestamp: number;
+}
+
 const WeatherWidget = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -10,11 +18,41 @@ const WeatherWidget = () => {
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    const getCachedWeather = (): CachedWeatherData | null => {
+      const cached = localStorage.getItem(WEATHER_CACHE_KEY);
+      if (!cached) return null;
+      
+      try {
+        const data = JSON.parse(cached) as CachedWeatherData;
+        const now = Date.now();
+        if (now - data.timestamp < CACHE_DURATION) {
+          return data;
+        }
+      } catch (e) {
+        localStorage.removeItem(WEATHER_CACHE_KEY);
+      }
+      return null;
+    };
+
     const getWeather = async () => {
+      const cached = getCachedWeather();
+      if (cached) {
+        setWeather(cached);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
         const data = await fetchWeatherData('Unai');
+        
+        const cachedData: CachedWeatherData = {
+          ...data,
+          timestamp: Date.now()
+        };
+        
+        localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(cachedData));
         setWeather(data);
         setRetryCount(0);
       } catch (error) {
@@ -38,7 +76,7 @@ const WeatherWidget = () => {
       if (retryCount < 3) {
         getWeather();
       }
-    }, 300000); // Update every 5 minutes
+    }, CACHE_DURATION);
 
     return () => clearInterval(interval);
   }, [retryCount]);

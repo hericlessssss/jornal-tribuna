@@ -4,6 +4,7 @@ import { useNewsStore } from '../store/news';
 import { ArrowLeft, User } from 'lucide-react';
 import { formatDate } from '../utils/dateFormatter';
 import NewsImageGallery from '../components/NewsImageGallery';
+import SocialShare from '../components/SocialShare';
 
 const NewsDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,6 +53,16 @@ const NewsDetail = () => {
             <time>{formatDate(selectedNews.created_at)}</time>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-6">{selectedNews.title}</h1>
+          
+          {/* Social Share Component */}
+          <div className="mb-6">
+            <SocialShare 
+              title={selectedNews.title} 
+              url={window.location.href}
+              image={selectedNews.cover_image_url}
+              newsId={selectedNews.id}
+            />
+          </div>
         </header>
 
         <img
