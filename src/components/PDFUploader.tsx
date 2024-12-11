@@ -14,6 +14,9 @@ interface PDFMetadata {
   description: string;
 }
 
+// 25MB in bytes
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
 const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [metadata, setMetadata] = useState<PDFMetadata>({
@@ -24,10 +27,19 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    if (file && file.type === 'application/pdf') {
-      setSelectedFile(file);
-      const title = file.name.replace('.pdf', '').replace(/_/g, ' ');
-      setMetadata(prev => ({ ...prev, title }));
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error('O arquivo excede o limite de 25MB');
+        return;
+      }
+      
+      if (file.type === 'application/pdf') {
+        setSelectedFile(file);
+        const title = file.name.replace('.pdf', '').replace(/_/g, ' ');
+        setMetadata(prev => ({ ...prev, title }));
+      } else {
+        toast.error('Por favor, selecione apenas arquivos PDF');
+      }
     }
   }, []);
 
@@ -35,6 +47,7 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     maxFiles: 1,
+    maxSize: MAX_FILE_SIZE,
   });
 
   const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -62,6 +75,14 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
     }
   };
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-6">
@@ -82,7 +103,7 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
                 <p className="text-sm text-gray-500">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  {formatFileSize(selectedFile.size)}
                 </p>
               </div>
             ) : (
@@ -90,7 +111,7 @@ const PDFUploader: React.FC<PDFUploaderProps> = ({ onUpload, onCancel }) => {
                 <p className="text-sm font-medium text-gray-900">
                   Arraste um arquivo PDF ou clique para selecionar
                 </p>
-                <p className="text-sm text-gray-500">Tamanho máximo: 10 MB</p>
+                <p className="text-sm text-gray-500">Tamanho máximo: 25 MB</p>
               </div>
             )}
           </div>
