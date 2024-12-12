@@ -1,16 +1,7 @@
 import React from 'react';
 import { PlusCircle } from 'lucide-react';
-
-interface NewsFormData {
-  id?: number;
-  title: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  cover_image_url: string;
-  highlighted: boolean;
-  homepage_highlight: boolean;
-}
+import NewsEditor from './NewsEditor';
+import type { NewsFormData } from '../../types/news';
 
 interface NewsFormProps {
   formData: NewsFormData;
@@ -19,6 +10,8 @@ interface NewsFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onContentChange: (content: string) => void;
+  onImagesChange: (images: any[]) => void;
 }
 
 const NewsForm: React.FC<NewsFormProps> = ({
@@ -28,6 +21,8 @@ const NewsForm: React.FC<NewsFormProps> = ({
   onSubmit,
   onChange,
   onCheckboxChange,
+  onContentChange,
+  onImagesChange,
 }) => {
   return (
     <form onSubmit={onSubmit} className="bg-white rounded-lg shadow-lg p-6">
@@ -63,17 +58,14 @@ const NewsForm: React.FC<NewsFormProps> = ({
         </div>
 
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
             Conteúdo
           </label>
-          <textarea
-            id="content"
-            name="content"
-            rows={6}
-            value={formData.content}
-            onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
-            required
+          <NewsEditor
+            content={formData.content}
+            onChange={onContentChange}
+            onImagesChange={onImagesChange}
+            initialImages={formData.images}
           />
         </div>
 

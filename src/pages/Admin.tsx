@@ -16,15 +16,9 @@ const Admin = () => {
     fetchEditions();
   }, [fetchEditions]);
 
-  const handlePDFUpload = async (file: File, metadata: any) => {
+  const handlePDFUpload = async (metadata: any) => {
     try {
-      const newEdition = {
-        title: metadata.title,
-        date: metadata.date,
-        description: metadata.description,
-      };
-
-      await addEdition(newEdition, file);
+      await addEdition(metadata);
     } catch (error) {
       console.error("Erro ao fazer upload do PDF:", error);
     }

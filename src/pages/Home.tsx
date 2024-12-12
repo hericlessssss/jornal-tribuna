@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import { FileText, Download, Eye, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import NewsCard from '../components/NewsCard';
 import AdDisplay from '../components/AdDisplay';
+import { PDFCard } from '../components/pdf';
 import { useNewsStore } from '../store/news';
 import { useEditionsStore } from '../store/editions';
 import { useAdsStore } from '../store/ads';
-import { formatDate } from '../utils/dateFormatter';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -50,7 +50,6 @@ const Home = () => {
                 {highlightedNews.map((newsItem) => (
                   <SwiperSlide key={newsItem.id}>
                     <div className="flex flex-col md:flex-row">
-                      {/* Image Container */}
                       <div className="w-full md:w-1/2">
                         <div className="relative">
                           <img
@@ -65,7 +64,6 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* Content Container */}
                       <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
                         <div>
                           <span className="inline-block px-3 py-1 bg-red-600 text-white text-sm font-medium rounded-full mb-4">
@@ -118,43 +116,7 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {recentEditions.map((edition) => (
-              <div
-                key={edition.id}
-                className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02]"
-              >
-                <div className="relative bg-gray-100 aspect-[1/1.4]">
-                  <img
-                    src={edition.cover_image_url || '/default-image.jpg'}
-                    alt={edition.title}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/default-image.jpg';
-                    }}
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{edition.title}</h3>
-                  <p className="text-gray-600 mb-4">{formatDate(edition.created_at || '')}</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => window.open(edition.pdf_url, '_blank')}
-                      className="flex items-center justify-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Visualizar
-                    </button>
-                    <a
-                      href={edition.pdf_url}
-                      download
-                      className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <PDFCard key={edition.id} edition={edition} />
             ))}
           </div>
         </section>

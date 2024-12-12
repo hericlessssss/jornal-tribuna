@@ -14,7 +14,6 @@
     "@headlessui/react": "^1.7.18",
     "@supabase/supabase-js": "^2.39.7",
     "date-fns": "^3.6.0",
-    "jornal-tribuna": "file:",
     "lucide-react": "^0.344.0",
     "pdfjs-dist": "^3.11.174",
     "react": "^18.3.1",

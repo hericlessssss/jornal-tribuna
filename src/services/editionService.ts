@@ -1,127 +1,127 @@
 import { supabase } from '../lib/supabase';
-import { logError } from '../utils/errorHandler';
-import { generatePDFThumbnail } from '../utils/pdfUtils';
-import { sanitizeFilename, generateThumbnailFilename } from '../utils/fileUtils';
+import { PDFEdition } from '../types/editions';
+import { ValidationError } from '../utils/errors';
 
-export interface PDFEdition {
-  id?: string;
-  title: string;
-  created_at?: string;
-  description: string;
-  pdf_url: string;
-  cover_image_url?: string;
-}
-
-export async function uploadPDFEdition(file: File, metadata: Omit<PDFEdition, 'pdf_url' | 'cover_image_url'>): Promise<PDFEdition> {
+const formatGoogleDriveUrl = (url: string): string => {
   try {
-    // 1. Sanitize filename
-    const pdfFileName = sanitizeFilename(file.name);
+    const urlObj = new URL(url);
+    if (!urlObj.hostname.includes('drive.google.com')) {
+      throw new ValidationError('Use apenas links do Google Drive');
+    }
+
+    // Extract file ID from various Google Drive URL formats
+    let fileId = '';
     
-    // 2. Upload PDF file to storage
-    const { data: pdfData, error: pdfError } = await supabase.storage
-      .from('pdf-editions')
-      .upload(pdfFileName, file);
-
-    if (pdfError) throw pdfError;
-
-    // 3. Get public URL for the PDF
-    const { data: { publicUrl: pdfUrl } } = supabase.storage
-      .from('pdf-editions')
-      .getPublicUrl(pdfFileName);
-
-    // 4. Generate thumbnail
-    const thumbnail = await generatePDFThumbnail(URL.createObjectURL(file));
+    // Format: /file/d/[fileId]/view
+    const fileMatch = url.match(/\/file\/d\/([^/]+)/);
+    if (fileMatch) {
+      fileId = fileMatch[1];
+    }
     
-    // 5. Upload thumbnail with sanitized name
-    const thumbnailFileName = generateThumbnailFilename(pdfFileName);
-    const thumbnailBlob = await (await fetch(thumbnail)).blob();
-    
-    const { error: thumbError } = await supabase.storage
-      .from('pdf-editions')
-      .upload(thumbnailFileName, thumbnailBlob);
+    // Format: /open?id=[fileId]
+    const idMatch = url.match(/[?&]id=([^&]+)/);
+    if (idMatch) {
+      fileId = idMatch[1];
+    }
 
-    if (thumbError) throw thumbError;
+    if (!fileId) {
+      throw new ValidationError('Link do Google Drive inválido');
+    }
 
-    // 6. Get public URL for the thumbnail
-    const { data: { publicUrl: coverUrl } } = supabase.storage
-      .from('pdf-editions')
-      .getPublicUrl(thumbnailFileName);
+    // Return the preview URL format
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  } catch (error) {
+    if (error instanceof ValidationError) throw error;
+    throw new ValidationError('URL inválida');
+  }
+};
 
-    // 7. Save edition data to database
-    const { data: edition, error: dbError } = await supabase
+export const uploadPDFEdition = async (metadata: {
+  title: string;
+  description?: string;
+  external_url: string;
+}): Promise<PDFEdition> => {
+  try {
+    if (!metadata.title?.trim()) {
+      throw new ValidationError('O título é obrigatório');
+    }
+
+    if (!metadata.external_url?.trim()) {
+      throw new ValidationError('O link do PDF é obrigatório');
+    }
+
+    const pdfUrl = formatGoogleDriveUrl(metadata.external_url);
+
+    const { data: edition, error } = await supabase
       .from('pdf_editions')
       .insert([{
-        title: metadata.title,
-        description: metadata.description,
+        title: metadata.title.trim(),
+        description: metadata.description?.trim() || '',
         pdf_url: pdfUrl,
-        cover_image_url: coverUrl,
+        is_external: true,
+        status: 'active',
         created_at: new Date().toISOString()
       }])
       .select()
       .single();
 
-    if (dbError) throw dbError;
+    if (error) {
+      throw new ValidationError('Erro ao salvar edição no banco de dados');
+    }
 
     return edition;
   } catch (error) {
-    logError('EditionService.uploadPDFEdition', error);
+    console.error('Error uploading PDF edition:', error);
     throw error;
   }
-}
+};
 
-export async function fetchEditions(): Promise<PDFEdition[]> {
+export const deleteEdition = async (id: number): Promise<void> => {
   try {
-    const { data, error } = await supabase
-      .from('pdf_editions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    logError('EditionService.fetchEditions', error);
-    throw error;
-  }
-}
-
-export async function deleteEdition(id: string): Promise<void> {
-  try {
-    // 1. Get edition data
-    const { data: edition, error: fetchError } = await supabase
-      .from('pdf_editions')
-      .select('pdf_url, cover_image_url')
-      .eq('id', id)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    // 2. Delete files from storage
-    if (edition) {
-      const pdfFileName = edition.pdf_url.split('/').pop();
-      const thumbFileName = edition.cover_image_url?.split('/').pop();
-
-      if (pdfFileName) {
-        await supabase.storage
-          .from('pdf-editions')
-          .remove([pdfFileName]);
-      }
-
-      if (thumbFileName) {
-        await supabase.storage
-          .from('pdf-editions')
-          .remove([thumbFileName]);
-      }
-    }
-
-    // 3. Delete database record
-    const { error: deleteError } = await supabase
+    const { error } = await supabase
       .from('pdf_editions')
       .delete()
       .eq('id', id);
 
-    if (deleteError) throw deleteError;
+    if (error) throw new ValidationError('Erro ao excluir edição');
   } catch (error) {
-    logError('EditionService.deleteEdition', error);
+    console.error('Error deleting edition:', error);
     throw error;
   }
-}
+};
+
+export const updateEdition = async (
+  id: number, 
+  updates: Partial<PDFEdition>
+): Promise<PDFEdition> => {
+  try {
+    const { data, error } = await supabase
+      .from('pdf_editions')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new ValidationError('Erro ao atualizar edição');
+    return data;
+  } catch (error) {
+    console.error('Error updating edition:', error);
+    throw error;
+  }
+};
+
+export const fetchEditions = async (): Promise<PDFEdition[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('pdf_editions')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) throw new ValidationError('Erro ao buscar edições');
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching editions:', error);
+    throw error;
+  }
+};

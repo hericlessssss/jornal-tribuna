@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, FileText } from 'lucide-react';
-import { validateAndFormatGoogleDriveUrl } from '../utils/googleDrive';
+import { parsePDFUrl } from '../../services/pdf/urlParser';
+import { PDFViewerState } from '../../services/pdf/types';
 
 interface PDFViewerProps {
   pdfUrl: string;
@@ -8,14 +9,16 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, onClose }) => {
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<PDFViewerState>({
+    loading: true,
+    error: null
+  });
 
-  const { isValid, previewUrl, error: urlError } = validateAndFormatGoogleDriveUrl(pdfUrl);
+  const { isValid, previewUrl, error: urlError } = parsePDFUrl(pdfUrl);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }, 1000);
 
     return () => clearTimeout(timer);
@@ -29,7 +32,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, onClose }) => {
             <AlertCircle className="w-6 h-6 flex-shrink-0" />
             <div>
               <h3 className="font-semibold mb-2">Erro ao carregar PDF</h3>
-              <p className="text-sm text-gray-600">{urlError || 'Não foi possível carregar o arquivo'}</p>
+              <p className="text-sm text-gray-600">{urlError}</p>
             </div>
           </div>
           <button
@@ -53,7 +56,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, onClose }) => {
           <X className="w-6 h-6" />
         </button>
 
-        {loading && (
+        {state.loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mx-auto mb-4"></div>
@@ -68,19 +71,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, onClose }) => {
           title="PDF Viewer"
           allowFullScreen
           allow="autoplay"
-          onLoad={() => setLoading(false)}
-          onError={() => {
-            setError('Erro ao carregar o PDF. Verifique se o arquivo está acessível.');
-            setLoading(false);
-          }}
+          onLoad={() => setState(prev => ({ ...prev, loading: false }))}
+          onError={() => setState({
+            loading: false,
+            error: 'Erro ao carregar o PDF. Verifique se o arquivo está acessível.'
+          })}
         />
 
-        {error && (
+        {state.error && (
           <div className="absolute inset-0 flex items-center justify-center bg-white">
             <div className="text-center p-6">
               <FileText className="w-16 h-16 text-red-600 mx-auto mb-4" />
               <p className="text-gray-900 font-semibold mb-2">Erro ao carregar PDF</p>
-              <p className="text-sm text-gray-600 mb-4">{error}</p>
+              <p className="text-sm text-gray-600 mb-4">{state.error}</p>
               <div className="space-y-2">
                 <a
                   href={pdfUrl}
