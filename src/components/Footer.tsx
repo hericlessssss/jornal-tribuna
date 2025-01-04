@@ -66,7 +66,7 @@ const Footer = () => {
             © {new Date().getFullYear()} Jornal Tribuna. Todos os direitos reservados.
           </p>
           <p className="text-white mt-2">
-            Desenvolvido por <strong>Labora Design</strong>.
+            Desenvolvido por <strong>Labora Tech</strong>.
           </p>
         </div>
       </div>
