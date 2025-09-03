@@ -29,7 +29,7 @@ body {
 .swiper-button-next,
 .swiper-button-prev {
   color: #dc2626 !important;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.8);
   width: 40px !important;
   height: 40px !important;
   border-radius: 50%;
